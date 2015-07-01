@@ -1,4 +1,4 @@
-# PPJSONSerialization [Chinese]()
+# PPJSONSerialization [Chinese](https://github.com/PonyCui/PPJSONSerialization/wiki)
 ## Introduce
 PPJSONSerialization is a Swift JSON Helper Library, it helps you to convert JSON string to Swift Class.
 
