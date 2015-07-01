@@ -81,9 +81,13 @@ class PPJSONSerialization: NSObject, NSCopying {
     // The following code is private
     
     private let rootKey = ""
+    private var updatedKeys = [String: Bool]()
     
     private func updateWithJSONObject(JSONObject: AnyObject, JSONKey: String) -> Bool {
         var propertyKey = propertyKeyFromJSONKey(JSONKey)
+        if JSONKey != rootKey {
+            updatedKeys[propertyKey] = true
+        }
         switch classForInstance(JSONObject) {
         case PPJSONValueType.String:
             if let _ = self.valueForKey(propertyKey) as? String {
@@ -110,6 +114,7 @@ class PPJSONSerialization: NSObject, NSCopying {
         case PPJSONValueType.Array:
             if propertyKey == rootKey {
                 propertyKey = "root"
+                updatedKeys[propertyKey] = true
             }
             if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
                 if let tplObject: AnyObject = propertyArray.lastObject {
@@ -165,6 +170,9 @@ class PPJSONSerialization: NSObject, NSCopying {
         default:
             break
         }
+        if JSONKey == rootKey {
+            resetEmptyArray()
+        }
         return true
     }
     
@@ -218,6 +226,29 @@ class PPJSONSerialization: NSObject, NSCopying {
             return transferString
         }
         return ""
+    }
+    
+    private func resetEmptyArray() {
+        let mirror = reflect(self)
+        let count = mirror.count
+        for var index = 0; index < count; ++index {
+            let key = mirror[index].0
+            
+            if key == "super" && index == 0 {
+                continue
+            }
+            
+            if let propertyValue: NSObject = valueForKey(key) as? NSObject {
+                if propertyValue.isKindOfClass(NSClassFromString("NSArray")) {
+                    if let keyUpdated = updatedKeys[key] {
+                        //do nothing
+                    }
+                    else {
+                        setValue(NSArray(), forKey: key)
+                    }
+                }
+            }
+        }
     }
     
     func copyWithZone(zone: NSZone) -> AnyObject {

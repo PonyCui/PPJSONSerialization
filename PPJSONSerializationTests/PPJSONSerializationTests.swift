@@ -163,4 +163,11 @@ class PPJSONSerializationTests: XCTestCase {
         }
     }
     
+    func testEmptyArray() {
+        let simpleJSON = "{}"
+        if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
+            XCTAssert(simpleObject.simpleArray.count == 0, "Pass")
+        }
+    }
+    
 }
