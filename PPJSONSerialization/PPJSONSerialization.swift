@@ -18,6 +18,11 @@ enum PPJSONValueType: Int {
 
 class PPJSONSerialization: NSObject, NSCopying {
     
+    /// Use mapping maps JSONKey to PropertyKey, [JSONKey: PropertyKey]
+    internal func mapping() -> [String: String] {
+        return [String: String]()
+    }
+    
     override init() {
         super.init()
     }
@@ -182,7 +187,13 @@ class PPJSONSerialization: NSObject, NSCopying {
     }
     
     private func propertyKeyFromJSONKey(JSONKey: AnyObject) -> String {
-        return stringObjectFromAnyObject(JSONKey) as String
+        var originJSONKey = stringObjectFromAnyObject(JSONKey) as String
+        if let mappingPropertyKey = mapping()[originJSONKey] {
+            return mappingPropertyKey
+        }
+        else {
+            return originJSONKey
+        }
     }
     
     private func numberObjectFromAnyObject(anyObject: AnyObject) -> NSNumber {

@@ -43,6 +43,15 @@ class RoomStruct: PPJSONSerialization {
     }
 }
 
+// Define a Map Struct and override mapping() return, you can map the JSON key to Custom Property key
+class MapStruct: PPJSONSerialization {
+    override func mapping() -> [String : String] {
+        return ["mapStr": "simpleStr"]
+    }
+    
+    var simpleStr = ""
+}
+
 class PPJSONSerializationTests: XCTestCase {
     
     override func setUp() {
@@ -130,6 +139,13 @@ class PPJSONSerializationTests: XCTestCase {
             }
         })
         NSRunLoop.currentRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(3.0))
+    }
+    
+    func testMapping() {
+        let simpleJSON = "\"mapStr\": \"String Value\""
+        if let simpleObject = MapStruct(JSONString: simpleJSON) {
+            XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
+        }
     }
     
 }
