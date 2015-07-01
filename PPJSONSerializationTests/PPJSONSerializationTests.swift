@@ -101,4 +101,21 @@ class PPJSONSerializationTests: XCTestCase {
         XCTAssert(buildingObject.buildRooms[1].roomSize == 6.7, "Pass")
     }
     
+    func testAsyncParse() {
+        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
+        
+        let simpleObject = SimpleStruct()
+        simpleObject.updateWithJSONString(simpleJSON, closure: { (finihsed) -> Void in
+            XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
+            XCTAssert(simpleObject.simpleInt == 1024, "Pass")
+            XCTAssert(simpleObject.simpleBool == true, "Pass")
+            XCTAssert(simpleObject.simpleDouble == 1024.00, "Pass")
+            XCTAssert(simpleObject.simpleArray[0] == 1, "Pass")
+            XCTAssert(simpleObject.simpleArray[1] == 0, "Pass")
+            XCTAssert(simpleObject.simpleArray[2] == 2, "Pass")
+            XCTAssert(simpleObject.simpleArray[3] == 4, "Pass")
+        })
+        NSRunLoop.currentRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(3.0))
+    }
+    
 }

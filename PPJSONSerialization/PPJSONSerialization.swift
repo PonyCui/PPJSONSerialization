@@ -50,6 +50,24 @@ class PPJSONSerialization: NSObject, NSCopying {
         }
     }
     
+    internal func updateWithJSONData(JSONData: NSData, closure: (Bool) -> Void) -> Void {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), { () -> Void in
+            let result = self.updateWithJSONData(JSONData)
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                closure(result)
+            });
+        });
+    }
+    
+    internal func updateWithJSONString(JSONString: String, closure: (Bool) -> Void) -> Void {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), { () -> Void in
+            let result = self.updateWithJSONString(JSONString)
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                closure(result)
+            });
+        });
+    }
+    
     // The following code is private
     
     private let rootKey = ""
