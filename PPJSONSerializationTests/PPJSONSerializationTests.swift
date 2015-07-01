@@ -21,7 +21,8 @@ class DemoStruct: PPJSONSerialization {
     var myString = ""
     var myInt = 0
     var myBool = false
-    var myArray = [Int]()
+    var myArray = [0.0]
+//    var myArray = [""]
     var myRooms = [RoomStruct()]
 }
 
@@ -40,10 +41,18 @@ class PPJSONSerializationTests: XCTestCase {
     func testParser() {
         
         let demoObject = DemoStruct()
-        demoObject.updateWithJSONString("{\"myString\":\"Hello, World!\",\"myInt\":8888.88,\"myBool\":true}")
+        demoObject.updateWithJSONString("{\"myString\":\"Hello, World!\",\"myInt\":8888.88,\"myBool\":true,\"myArray\":[1,2,3],\"myRooms\":[{\"roomID\":\"1\"}]}")
         XCTAssert(demoObject.myString == "Hello, World!", "Pass")
         XCTAssert(demoObject.myInt == 8888, "Pass")
         XCTAssert(demoObject.myBool == true, "Pass")
+        XCTAssert(demoObject.myArray[0] == 1, "Pass")
+        XCTAssert(demoObject.myArray[1] == 2, "Pass")
+        XCTAssert(demoObject.myArray[2] == 3, "Pass")
+//        XCTAssert(demoObject.myArray[0] == "1", "Pass")
+//        XCTAssert(demoObject.myArray[1] == "2", "Pass")
+//        XCTAssert(demoObject.myArray[2] == "3", "Pass")
+        XCTAssert(demoObject.myRooms[0].roomID == "1", "Pass")
+
     }
     
 }
