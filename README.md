@@ -47,7 +47,7 @@ func testTypeTransfer() {
 }
 ```
 
-Struct may contains another Struct or even an Array contains Struct objects, PPJSONSerialization can easify handle this case.
+Struct may contains another Struct or even an Array contains Struct objects, PPJSONSerialization can easily handle this case.
 ```swift
 // Define a Building Struct to deal with dictionary contains JSON
 class BuildingStruct: PPJSONSerialization {
