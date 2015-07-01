@@ -36,6 +36,7 @@ class BuildingStruct: PPJSONSerialization {
 class RoomStruct: PPJSONSerialization {
     var roomNumber = 0
     var roomSize: Double = 0.0
+    var roomMates = [""]
     
     // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
     override func copyWithZone(zone: NSZone) -> AnyObject {
@@ -167,6 +168,15 @@ class PPJSONSerializationTests: XCTestCase {
         let simpleJSON = "{}"
         if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
             XCTAssert(simpleObject.simpleArray.count == 0, "Pass")
+        }
+        if let arrayObject = ArrayStruct(JSONString: simpleJSON) {
+            XCTAssert(arrayObject.root.count == 0, "Pass")
+        }
+        if let buildingObject = BuildingStruct(JSONString: simpleJSON) {
+            XCTAssert(buildingObject.buildRooms.count == 0, "Pass")
+        }
+        if let buildingObject = BuildingStruct(JSONString: "{\"buildRooms\":[{}]}") {
+            XCTAssert(buildingObject.buildRooms[0].roomMates.count == 0, "Pass")
         }
     }
     
