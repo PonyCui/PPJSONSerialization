@@ -102,6 +102,18 @@ func testMapping() {
 }
 ```
 
+PPJSONSerialization could serialize Class to JSON, just try the following code
+```swift
+let simpleObject = SimpleStruct()
+simpleObject.simpleStr = "String Value"
+simpleObject.simpleBool = true
+simpleObject.simpleInt = 1024
+simpleObject.simpleDouble = 1024.01
+simpleObject.simpleArray = [1, 0, 2, 4]
+let JSONString = simpleObject.JSONString()
+let JSONData = simpleObject.JSONData()
+```
+
 PPJSONSerialization is still in development, welcome to improve the project together.
 
 ## Requirements
