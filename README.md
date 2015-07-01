@@ -1,4 +1,4 @@
-# PPJSONSerialization
+# PPJSONSerialization [Chinese]()
 ## Introduce
 PPJSONSerialization is a Swift JSON Helper Library, it helps you to convert JSON string to Swift Class.
 
@@ -83,5 +83,14 @@ func testDictionaryContainsJSON() {
 
 PPJSONSerialization is still in development, welcome to improve the project together.
 
+## Requirements
+* iOS 7.0+ / Mac OS X 10.10+
+* Xcode 6.3
+* Not support Xcode7.0 beta, because Swift2.0 change a lot, we will support it after Swift2.0 release.
 
+## Integration
+Add ```PPJSONSerialization.swift``` into your project, that's enough
+
+## License
+MIT License, Please feel free to use it.
 
