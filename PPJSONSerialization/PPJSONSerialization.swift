@@ -18,10 +18,15 @@ enum PPJSONValueType: Int {
 
 class PPJSONSerialization: NSObject, NSCopying {
     
+    /// You use JSONMap links Property to JSON Object, [Property-Name: JSON-Object-Name]
+    internal var JSONMap = [String: String]()
+    
+    private let rootKey = ""
+    
     internal func updateWithJSONString(JSONString: String) -> Bool {
         if let data = JSONString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false) {
             if let JSONObject: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers, error: nil) {
-                return updateWithJSONObject(JSONObject, theKey: nil)
+                return updateWithJSONObject(JSONObject, JSONKey: rootKey)
             }
             else {
                 return false
@@ -32,68 +37,63 @@ class PPJSONSerialization: NSObject, NSCopying {
         }
     }
     
-    private func updateWithJSONObject(JSONObject: AnyObject, theKey: String?) -> Bool {
+    private func updateWithJSONObject(JSONObject: AnyObject, JSONKey: String) -> Bool {
+        let propertyKey = propertyKeyFromJSONKey(JSONKey)
         switch classForInstance(JSONObject) {
         case PPJSONValueType.String:
-            if let currentKey = theKey {
-                if let _ = self.valueForKey(currentKey) as? String {
-                    setValue(JSONObject, forKeyPath: currentKey)
-                }
-                else if let _ = self.valueForKey(currentKey) as? Double {
-                    setValue(numberObjectFromAnyObject(JSONObject), forKey: currentKey)
-                }
-                else if let _ = self.valueForKey(currentKey) as? Int {
-                    setValue(numberObjectFromAnyObject(JSONObject), forKey: currentKey)
-                }
+            if let _ = self.valueForKey(propertyKey) as? String {
+                setValue(JSONObject, forKeyPath: propertyKey)
+            }
+            else if let _ = self.valueForKey(propertyKey) as? Double {
+                setValue(numberObjectFromAnyObject(JSONObject), forKey: propertyKey)
+            }
+            else if let _ = self.valueForKey(propertyKey) as? Int {
+                setValue(numberObjectFromAnyObject(JSONObject), forKey: propertyKey)
             }
             break
         case PPJSONValueType.Number:
-            if let currentKey = theKey {
-                if let _ = self.valueForKey(currentKey) as? String {
-                    setValue(stringObjectFromAnyObject(JSONObject), forKey: currentKey)
-                }
-                else if let _ = self.valueForKey(currentKey) as? Double {
-                    setValue(JSONObject, forKey: currentKey)
-                }
-                else if let _ = self.valueForKey(currentKey) as? Int {
-                    setValue(JSONObject, forKey: currentKey)
-                }
+            if let _ = self.valueForKey(propertyKey) as? String {
+                setValue(stringObjectFromAnyObject(JSONObject), forKey: propertyKey)
+            }
+            else if let _ = self.valueForKey(propertyKey) as? Double {
+                setValue(JSONObject, forKey: propertyKey)
+            }
+            else if let _ = self.valueForKey(propertyKey) as? Int {
+                setValue(JSONObject, forKey: propertyKey)
             }
             break
         case PPJSONValueType.Array:
-            if let currentKey = theKey {
-                if let currentArray = self.valueForKey(currentKey) as? NSArray {
-                    if let tplObject: AnyObject = currentArray.lastObject {
-                        var arrayWithData = NSMutableArray()
-                        if tplObject.isKindOfClass(NSClassFromString("NSNumber")) {
-                            if let currentObject: NSArray = JSONObject as? NSArray {
-                                for currentItem in currentObject {
-                                    arrayWithData.addObject(numberObjectFromAnyObject(currentItem))
-                                }
+            if let currentArray = self.valueForKey(propertyKey) as? NSArray {
+                if let tplObject: AnyObject = currentArray.lastObject {
+                    var arrayWithData = NSMutableArray()
+                    if tplObject.isKindOfClass(NSClassFromString("NSNumber")) {
+                        if let currentObject: NSArray = JSONObject as? NSArray {
+                            for currentItem in currentObject {
+                                arrayWithData.addObject(numberObjectFromAnyObject(currentItem))
                             }
                         }
-                        else if tplObject.isKindOfClass(NSClassFromString("NSString")) {
-                            if let currentObject: NSArray = JSONObject as? NSArray {
-                                for currentItem in currentObject {
-                                    arrayWithData.addObject(stringObjectFromAnyObject(currentItem))
-                                }
+                    }
+                    else if tplObject.isKindOfClass(NSClassFromString("NSString")) {
+                        if let currentObject: NSArray = JSONObject as? NSArray {
+                            for currentItem in currentObject {
+                                arrayWithData.addObject(stringObjectFromAnyObject(currentItem))
                             }
                         }
-                        else {
-                            if tplObject.respondsToSelector("copy") {
-                                if let currentObject: NSArray = JSONObject as? NSArray {
-                                    for currentItem in currentObject {
-                                        if let mirrorObject: PPJSONSerialization = tplObject.copy() as? PPJSONSerialization {
-                                            mirrorObject.updateWithJSONObject(currentItem, theKey: currentKey)
-                                            arrayWithData.addObject(mirrorObject)
-                                        }
+                    }
+                    else {
+                        if tplObject.respondsToSelector("copy") {
+                            if let currentObject: NSArray = JSONObject as? NSArray {
+                                for currentItem in currentObject {
+                                    if let mirrorObject: PPJSONSerialization = tplObject.copy() as? PPJSONSerialization {
+                                        mirrorObject.updateWithJSONObject(currentItem, JSONKey: rootKey)
+                                        arrayWithData.addObject(mirrorObject)
                                     }
                                 }
                             }
                         }
-                        setValue(arrayWithData, forKey: currentKey)
-                        break
                     }
+                    setValue(arrayWithData, forKey: propertyKey)
+                    break
                 }
             }
             break
@@ -101,7 +101,7 @@ class PPJSONSerialization: NSObject, NSCopying {
             let theDictionary: NSDictionary! = JSONObject as? NSDictionary
             for (theKey, theValue) in theDictionary {
                 if let objKey = theKey as? String {
-                    updateWithJSONObject(theValue, theKey: objKey)
+                    updateWithJSONObject(theValue, JSONKey: objKey)
                 }
             }
             break
@@ -126,6 +126,16 @@ class PPJSONSerialization: NSObject, NSCopying {
         }
         else {
             return PPJSONValueType.Unknown
+        }
+    }
+    
+    private func propertyKeyFromJSONKey(JSONKey: AnyObject) -> String {
+        let tmpKey = stringObjectFromAnyObject(JSONKey) as String
+        if let propertyKey = JSONMap[tmpKey] {
+            return propertyKey
+        }
+        else {
+            return tmpKey
         }
     }
     

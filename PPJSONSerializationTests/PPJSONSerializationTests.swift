@@ -15,6 +15,7 @@ class RoomStruct: PPJSONSerialization {
     override func copyWithZone(zone: NSZone) -> AnyObject {
         return RoomStruct()
     }
+    
 }
 
 class DemoStruct: PPJSONSerialization {
@@ -22,8 +23,14 @@ class DemoStruct: PPJSONSerialization {
     var myInt = 0
     var myBool = false
     var myArray = [0.0]
-//    var myArray = [""]
+    var myStringArray = [""]
     var myRooms = [RoomStruct()]
+    
+    override init() {
+        super.init()
+        JSONMap["myStringArray"] = "myArray"
+    }
+    
 }
 
 class PPJSONSerializationTests: XCTestCase {
