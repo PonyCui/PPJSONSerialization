@@ -18,14 +18,32 @@ enum PPJSONValueType: Int {
 
 class PPJSONSerialization: NSObject, NSCopying {
     
+    override init() {
+        super.init()
+    }
+    
+    init(JSONData: NSData) {
+        super.init()
+        self.updateWithJSONData(JSONData)
+    }
+    
+    init(JSONString: String) {
+        super.init()
+        self.updateWithJSONString(JSONString)
+    }
+    
+    internal func updateWithJSONData(JSONData: NSData) -> Bool {
+        if let JSONObject: AnyObject = NSJSONSerialization.JSONObjectWithData(JSONData, options: nil, error: nil) {
+            return updateWithJSONObject(JSONObject, JSONKey: rootKey)
+        }
+        else {
+            return false
+        }
+    }
+    
     internal func updateWithJSONString(JSONString: String) -> Bool {
         if let data = JSONString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false) {
-            if let JSONObject: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers, error: nil) {
-                return updateWithJSONObject(JSONObject, JSONKey: rootKey)
-            }
-            else {
-                return false
-            }
+            return updateWithJSONData(data)
         }
         else {
             return false
@@ -105,7 +123,7 @@ class PPJSONSerialization: NSObject, NSCopying {
         default:
             break
         }
-        return false
+        return true
     }
     
     private func classForInstance(instance: AnyObject) -> PPJSONValueType {

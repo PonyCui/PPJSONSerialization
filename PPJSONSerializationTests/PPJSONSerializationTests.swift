@@ -9,22 +9,14 @@
 import UIKit
 import XCTest
 
-class RoomStruct: PPJSONSerialization {
-    var roomID: String = ""
-    
-    override func copyWithZone(zone: NSZone) -> AnyObject {
-        return RoomStruct()
-    }
-    
-}
-
-class DemoStruct: PPJSONSerialization {
-    var myString = ""
-    var myInt = 0
-    var myBool = false
-    var myArray = [0.0]
-    var myStringArray = [""]
-    var myRooms = [RoomStruct()]
+// Define a Simple Struct
+// Be careful, All Struct are not support dictionary type
+class SimpleStruct: PPJSONSerialization {
+    var simpleStr = ""
+    var simpleInt = 0
+    var simpleBool = false
+    var simpleDouble = 0.0
+    var simpleArray = [0]
 }
 
 class PPJSONSerializationTests: XCTestCase {
@@ -39,21 +31,26 @@ class PPJSONSerializationTests: XCTestCase {
         super.tearDown()
     }
     
-    func testParser() {
-        
-        let demoObject = DemoStruct()
-        demoObject.updateWithJSONString("{\"myString\":\"Hello, World!\",\"myInt\":8888.88,\"myBool\":true,\"myArray\":[1,2,3],\"myRooms\":[{\"roomID\":\"1\"}]}")
-        XCTAssert(demoObject.myString == "Hello, World!", "Pass")
-        XCTAssert(demoObject.myInt == 8888, "Pass")
-        XCTAssert(demoObject.myBool == true, "Pass")
-        XCTAssert(demoObject.myArray[0] == 1, "Pass")
-        XCTAssert(demoObject.myArray[1] == 2, "Pass")
-        XCTAssert(demoObject.myArray[2] == 3, "Pass")
-//        XCTAssert(demoObject.myArray[0] == "1", "Pass")
-//        XCTAssert(demoObject.myArray[1] == "2", "Pass")
-//        XCTAssert(demoObject.myArray[2] == "3", "Pass")
-        XCTAssert(demoObject.myRooms[0].roomID == "1", "Pass")
-
+    func testSimpleParser() {
+        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
+        let simpleObject = SimpleStruct(JSONString: simpleJSON)
+        XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
+        XCTAssert(simpleObject.simpleInt == 1024, "Pass")
+        XCTAssert(simpleObject.simpleBool == true, "Pass")
+        XCTAssert(simpleObject.simpleDouble == 1024.00, "Pass")
+        XCTAssert(simpleObject.simpleArray[0] == 1, "Pass")
+        XCTAssert(simpleObject.simpleArray[1] == 0, "Pass")
+        XCTAssert(simpleObject.simpleArray[2] == 2, "Pass")
+        XCTAssert(simpleObject.simpleArray[3] == 4, "Pass")
+    }
+    
+    func testTypeTransfer() {
+        let typeErrorJSON = "{\"simpleStr\": 1024, \"simpleInt\": \"1024\", \"simpleBool\": null, \"simpleDouble\": \"Bool Value\", \"simpleArray\": {}}"
+        let simpleObject = SimpleStruct(JSONString: typeErrorJSON)
+        XCTAssert(simpleObject.simpleStr == "1024", "Pass")
+        XCTAssert(simpleObject.simpleInt == 1024, "Pass")
+        XCTAssert(simpleObject.simpleBool == false, "Pass")
+        XCTAssert(simpleObject.simpleDouble == 0.0, "Pass")
     }
     
 }
