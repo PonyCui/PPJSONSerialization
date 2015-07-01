@@ -136,8 +136,8 @@ class PPJSONSerializationTests: XCTestCase {
         let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
         
         let simpleObject = SimpleStruct()
-        simpleObject.updateWithJSONString(simpleJSON, closure: { (noneOfError) -> Void in
-            if noneOfError {
+        simpleObject.updateWithJSONString(simpleJSON, closure: { (isSucceed) -> Void in
+            if isSucceed {
                 XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
                 XCTAssert(simpleObject.simpleInt == 1024, "Pass")
                 XCTAssert(simpleObject.simpleBool == true, "Pass")
@@ -151,6 +151,7 @@ class PPJSONSerializationTests: XCTestCase {
                 XCTAssert(false, "JSON Parser Failable")
             }
         })
+        
         NSRunLoop.currentRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(1.0))
     }
     
