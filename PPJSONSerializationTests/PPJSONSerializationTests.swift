@@ -9,8 +9,9 @@
 import UIKit
 import XCTest
 
-// Define a Simple Struct
-// Be careful, All Struct are not support dictionary type
+// Define a Simple Struct;
+// Be careful, All Struct are not support dictionary type;
+// All properties must provide default value and type.
 class SimpleStruct: PPJSONSerialization {
     var simpleStr = ""
     var simpleInt = 0
@@ -31,6 +32,7 @@ class BuildingStruct: PPJSONSerialization {
     var buildRooms = [RoomStruct()]
 }
 
+// Define a Room Struct to handle sub dictionary JSON
 class RoomStruct: PPJSONSerialization {
     var roomNumber = 0
     var roomSize: Double = 0.0
