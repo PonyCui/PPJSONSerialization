@@ -25,12 +25,6 @@ class DemoStruct: PPJSONSerialization {
     var myArray = [0.0]
     var myStringArray = [""]
     var myRooms = [RoomStruct()]
-    
-    override init() {
-        super.init()
-        JSONMap["myStringArray"] = "myArray"
-    }
-    
 }
 
 class PPJSONSerializationTests: XCTestCase {

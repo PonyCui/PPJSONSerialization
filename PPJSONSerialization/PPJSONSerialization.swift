@@ -18,9 +18,6 @@ enum PPJSONValueType: Int {
 
 class PPJSONSerialization: NSObject, NSCopying {
     
-    /// You use JSONMap links Property to JSON Object, [Property-Name: JSON-Object-Name]
-    internal var JSONMap = [String: String]()
-    
     internal func updateWithJSONString(JSONString: String) -> Bool {
         if let data = JSONString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false) {
             if let JSONObject: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers, error: nil) {
@@ -67,24 +64,21 @@ class PPJSONSerialization: NSObject, NSCopying {
         case PPJSONValueType.Array:
             if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
                 if let tplObject: AnyObject = propertyArray.lastObject {
-                    var objectWithData = NSMutableArray()
-                    if tplObject.isKindOfClass(NSClassFromString("NSNumber")) {
-                        if let JSONArray: NSArray = JSONObject as? NSArray {
+                    if let JSONArray: NSArray = JSONObject as? NSArray {
+                        var objectWithData = NSMutableArray()
+                        switch classForInstance(tplObject) {
+                        case PPJSONValueType.Number:
                             for JSONItem in JSONArray {
                                 objectWithData.addObject(numberObjectFromAnyObject(JSONItem))
                             }
-                        }
-                    }
-                    else if tplObject.isKindOfClass(NSClassFromString("NSString")) {
-                        if let JSONArray: NSArray = JSONObject as? NSArray {
+                            break
+                        case PPJSONValueType.String:
                             for JSONItem in JSONArray {
                                 objectWithData.addObject(stringObjectFromAnyObject(JSONItem))
                             }
-                        }
-                    }
-                    else {
-                        if tplObject.respondsToSelector("copy") {
-                            if let JSONArray: NSArray = JSONObject as? NSArray {
+                            break
+                        default:
+                            if tplObject.respondsToSelector("copy") {
                                 for JSONItem in JSONArray {
                                     if let mirrorObject: PPJSONSerialization = tplObject.copy() as? PPJSONSerialization {
                                         mirrorObject.updateWithJSONObject(JSONItem, JSONKey: rootKey)
@@ -92,9 +86,10 @@ class PPJSONSerialization: NSObject, NSCopying {
                                     }
                                 }
                             }
+                            break
                         }
+                        setValue(objectWithData.copy(), forKey: propertyKey)
                     }
-                    setValue(objectWithData.copy(), forKey: propertyKey)
                     break
                 }
             }
@@ -132,13 +127,7 @@ class PPJSONSerialization: NSObject, NSCopying {
     }
     
     private func propertyKeyFromJSONKey(JSONKey: AnyObject) -> String {
-        let tmpKey = stringObjectFromAnyObject(JSONKey) as String
-        if let propertyKey = JSONMap[tmpKey] {
-            return propertyKey
-        }
-        else {
-            return tmpKey
-        }
+        return stringObjectFromAnyObject(JSONKey) as String
     }
     
     private func numberObjectFromAnyObject(anyObject: AnyObject) -> NSNumber {
