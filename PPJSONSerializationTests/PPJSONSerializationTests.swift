@@ -81,6 +81,9 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(simpleObject.simpleArray[2] == 2, "Pass")
             XCTAssert(simpleObject.simpleArray[3] == 4, "Pass")
         }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
+        }
     }
     
     func testTypeTransfer() {
@@ -92,6 +95,9 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(simpleObject.simpleDouble == 0.0, "Pass")
             XCTAssert(simpleObject.simpleArray.count <= 0, "Pass")
         }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
+        }
     }
     
     func testArrayJSON() {
@@ -102,6 +108,9 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(arrayObject.root[1] == 0, "Pass")
             XCTAssert(arrayObject.root[2] == 2, "Pass")
             XCTAssert(arrayObject.root[3] == 4, "Pass")
+        }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
         }
     }
     
@@ -116,6 +125,9 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(buildingObject.buildRooms[0].roomSize == 6.6, "Pass")
             XCTAssert(buildingObject.buildRooms[1].roomNumber == 633, "Pass")
             XCTAssert(buildingObject.buildRooms[1].roomSize == 6.7, "Pass")
+        }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
         }
     }
     
@@ -135,16 +147,19 @@ class PPJSONSerializationTests: XCTestCase {
                 XCTAssert(simpleObject.simpleArray[3] == 4, "Pass")
             }
             else {
-                XCTAssert(noneOfError == false, "Pass")
+                XCTAssert(false, "JSON Parser Failable")
             }
         })
-        NSRunLoop.currentRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(3.0))
+        NSRunLoop.currentRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(1.0))
     }
     
     func testMapping() {
         let simpleJSON = "{\"mapStr\": \"String Value\"}"
         if let simpleObject = MapStruct(JSONString: simpleJSON) {
             XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
+        }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
         }
     }
     
