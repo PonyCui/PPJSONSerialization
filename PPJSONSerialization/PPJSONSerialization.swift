@@ -22,14 +22,19 @@ class PPJSONSerialization: NSObject, NSCopying {
         super.init()
     }
     
-    init(JSONData: NSData) {
+    init?(JSONData: NSData) {
         super.init()
-        self.updateWithJSONData(JSONData)
+        if self.updateWithJSONData(JSONData) == false {
+            return nil
+        }
+        
     }
     
-    init(JSONString: String) {
+    init?(JSONString: String) {
         super.init()
-        self.updateWithJSONString(JSONString)
+        if self.updateWithJSONString(JSONString) == false {
+            return nil
+        }
     }
     
     internal func updateWithJSONData(JSONData: NSData) -> Bool {
