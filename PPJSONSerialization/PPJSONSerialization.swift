@@ -21,8 +21,6 @@ class PPJSONSerialization: NSObject, NSCopying {
     /// You use JSONMap links Property to JSON Object, [Property-Name: JSON-Object-Name]
     internal var JSONMap = [String: String]()
     
-    private let rootKey = ""
-    
     internal func updateWithJSONString(JSONString: String) -> Bool {
         if let data = JSONString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false) {
             if let JSONObject: AnyObject = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.MutableContainers, error: nil) {
@@ -36,6 +34,10 @@ class PPJSONSerialization: NSObject, NSCopying {
             return false
         }
     }
+    
+    // The following code is private
+    
+    private let rootKey = ""
     
     private func updateWithJSONObject(JSONObject: AnyObject, JSONKey: String) -> Bool {
         let propertyKey = propertyKeyFromJSONKey(JSONKey)
@@ -63,45 +65,45 @@ class PPJSONSerialization: NSObject, NSCopying {
             }
             break
         case PPJSONValueType.Array:
-            if let currentArray = self.valueForKey(propertyKey) as? NSArray {
-                if let tplObject: AnyObject = currentArray.lastObject {
-                    var arrayWithData = NSMutableArray()
+            if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
+                if let tplObject: AnyObject = propertyArray.lastObject {
+                    var objectWithData = NSMutableArray()
                     if tplObject.isKindOfClass(NSClassFromString("NSNumber")) {
-                        if let currentObject: NSArray = JSONObject as? NSArray {
-                            for currentItem in currentObject {
-                                arrayWithData.addObject(numberObjectFromAnyObject(currentItem))
+                        if let JSONArray: NSArray = JSONObject as? NSArray {
+                            for JSONItem in JSONArray {
+                                objectWithData.addObject(numberObjectFromAnyObject(JSONItem))
                             }
                         }
                     }
                     else if tplObject.isKindOfClass(NSClassFromString("NSString")) {
-                        if let currentObject: NSArray = JSONObject as? NSArray {
-                            for currentItem in currentObject {
-                                arrayWithData.addObject(stringObjectFromAnyObject(currentItem))
+                        if let JSONArray: NSArray = JSONObject as? NSArray {
+                            for JSONItem in JSONArray {
+                                objectWithData.addObject(stringObjectFromAnyObject(JSONItem))
                             }
                         }
                     }
                     else {
                         if tplObject.respondsToSelector("copy") {
-                            if let currentObject: NSArray = JSONObject as? NSArray {
-                                for currentItem in currentObject {
+                            if let JSONArray: NSArray = JSONObject as? NSArray {
+                                for JSONItem in JSONArray {
                                     if let mirrorObject: PPJSONSerialization = tplObject.copy() as? PPJSONSerialization {
-                                        mirrorObject.updateWithJSONObject(currentItem, JSONKey: rootKey)
-                                        arrayWithData.addObject(mirrorObject)
+                                        mirrorObject.updateWithJSONObject(JSONItem, JSONKey: rootKey)
+                                        objectWithData.addObject(mirrorObject)
                                     }
                                 }
                             }
                         }
                     }
-                    setValue(arrayWithData, forKey: propertyKey)
+                    setValue(objectWithData.copy(), forKey: propertyKey)
                     break
                 }
             }
             break
         case PPJSONValueType.Dictionary:
-            let theDictionary: NSDictionary! = JSONObject as? NSDictionary
-            for (theKey, theValue) in theDictionary {
-                if let objKey = theKey as? String {
-                    updateWithJSONObject(theValue, JSONKey: objKey)
+            let JSONDictionary: NSDictionary! = JSONObject as? NSDictionary
+            for (JSONKey, JSONValue) in JSONDictionary {
+                if let JSONStringKey = JSONKey as? String {
+                    updateWithJSONObject(JSONValue, JSONKey: JSONStringKey)
                 }
             }
             break
