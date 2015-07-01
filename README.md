@@ -97,3 +97,5 @@ Add ```PPJSONSerialization.swift``` into your project, that's enough
 ## License
 MIT License, Please feel free to use it.
 
+## Thanks
+* Thanks for @onevcat suggest use Failable init
