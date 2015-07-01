@@ -55,7 +55,7 @@ class PPJSONSerialization: NSObject, NSCopying {
     private let rootKey = ""
     
     private func updateWithJSONObject(JSONObject: AnyObject, JSONKey: String) -> Bool {
-        let propertyKey = propertyKeyFromJSONKey(JSONKey)
+        var propertyKey = propertyKeyFromJSONKey(JSONKey)
         switch classForInstance(JSONObject) {
         case PPJSONValueType.String:
             if let _ = self.valueForKey(propertyKey) as? String {
@@ -80,6 +80,9 @@ class PPJSONSerialization: NSObject, NSCopying {
             }
             break
         case PPJSONValueType.Array:
+            if propertyKey == rootKey {
+                propertyKey = "root"
+            }
             if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
                 if let tplObject: AnyObject = propertyArray.lastObject {
                     if let JSONArray: NSArray = JSONObject as? NSArray {
@@ -108,16 +111,27 @@ class PPJSONSerialization: NSObject, NSCopying {
                         }
                         setValue(objectWithData.copy(), forKey: propertyKey)
                     }
+                    else {
+                        setValue(NSArray(), forKey: propertyKey)
+                    }
                     break
                 }
             }
             break
         case PPJSONValueType.Dictionary:
-            let JSONDictionary: NSDictionary! = JSONObject as? NSDictionary
-            for (JSONKey, JSONValue) in JSONDictionary {
-                if let JSONStringKey = JSONKey as? String {
-                    updateWithJSONObject(JSONValue, JSONKey: JSONStringKey)
+            if JSONKey == rootKey {
+                let JSONDictionary: NSDictionary! = JSONObject as? NSDictionary
+                for (JSONKey, JSONValue) in JSONDictionary {
+                    if let JSONStringKey = JSONKey as? String {
+                        updateWithJSONObject(JSONValue, JSONKey: JSONStringKey)
+                    }
                 }
+            }
+            else if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
+                setValue(NSArray(), forKey: propertyKey)
+            }
+            else if let propertyObject = self.valueForKey(propertyKey) as? PPJSONSerialization {
+                propertyObject.updateWithJSONObject(JSONObject, JSONKey: rootKey)
             }
             break
         default:

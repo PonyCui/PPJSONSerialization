@@ -19,6 +19,28 @@ class SimpleStruct: PPJSONSerialization {
     var simpleArray = [0]
 }
 
+// Define an Array Struct to deal with the array JSON
+class ArrayStruct: PPJSONSerialization {
+    var root = [0]
+}
+
+// Define a Building Struct to deal with dictionary contains JSON
+class BuildingStruct: PPJSONSerialization {
+    var buildNumber = ""
+    var managementRoom = RoomStruct()
+    var buildRooms = [RoomStruct()]
+}
+
+class RoomStruct: PPJSONSerialization {
+    var roomNumber = 0
+    var roomSize: Double = 0.0
+    
+    // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
+    override func copyWithZone(zone: NSZone) -> AnyObject {
+        return RoomStruct()
+    }
+}
+
 class PPJSONSerializationTests: XCTestCase {
     
     override func setUp() {
@@ -51,6 +73,30 @@ class PPJSONSerializationTests: XCTestCase {
         XCTAssert(simpleObject.simpleInt == 1024, "Pass")
         XCTAssert(simpleObject.simpleBool == false, "Pass")
         XCTAssert(simpleObject.simpleDouble == 0.0, "Pass")
+        XCTAssert(simpleObject.simpleArray.count <= 0, "Pass")
+    }
+    
+    func testArrayJSON() {
+        let arrayJSON = "[1,0,2,4]"
+        let arrayObject = ArrayStruct(JSONString: arrayJSON)
+        XCTAssert(arrayObject.root.count == 4, "Pass")
+        XCTAssert(arrayObject.root[0] == 1, "Pass")
+        XCTAssert(arrayObject.root[1] == 0, "Pass")
+        XCTAssert(arrayObject.root[2] == 2, "Pass")
+        XCTAssert(arrayObject.root[3] == 4, "Pass")
+    }
+    
+    func testDictionaryContainsJSON() {
+        let dictionaryContainsJSON = "{\"buildNumber\": \"B\", \"managementRoom\":{\"roomNumber\":101, \"roomSize\":10.14}, \"buildRooms\":[{\"roomNumber\":632, \"roomSize\":6.6}, {\"roomNumber\":633, \"roomSize\":6.7}]}"
+        let buildingObject = BuildingStruct(JSONString: dictionaryContainsJSON)
+        XCTAssert(buildingObject.buildNumber == "B", "Pass")
+        XCTAssert(buildingObject.managementRoom.roomNumber == 101, "Pass")
+        XCTAssert(buildingObject.managementRoom.roomSize == 10.14, "Pass")
+        XCTAssert(buildingObject.buildRooms.count == 2, "Pass")
+        XCTAssert(buildingObject.buildRooms[0].roomNumber == 632, "Pass")
+        XCTAssert(buildingObject.buildRooms[0].roomSize == 6.6, "Pass")
+        XCTAssert(buildingObject.buildRooms[1].roomNumber == 633, "Pass")
+        XCTAssert(buildingObject.buildRooms[1].roomSize == 6.7, "Pass")
     }
     
 }
