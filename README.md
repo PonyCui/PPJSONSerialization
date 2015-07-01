@@ -1,4 +1,4 @@
-# PPJSONSerialization [Chinese](https://github.com/PonyCui/PPJSONSerialization/wiki)
+# PPJSONSerialization [中文介绍](https://github.com/PonyCui/PPJSONSerialization/wiki)
 ## Introduce
 PPJSONSerialization is a Swift JSON Helper Library, it helps you to convert JSON string to Swift Class.
 
@@ -80,6 +80,24 @@ func testDictionaryContainsJSON() {
     XCTAssert(buildingObject.buildRooms[0].roomSize == 6.6, "Pass")
     XCTAssert(buildingObject.buildRooms[1].roomNumber == 633, "Pass")
     XCTAssert(buildingObject.buildRooms[1].roomSize == 6.7, "Pass")
+  }
+}
+```
+
+Override the mapping function and return your custom mapping Dictionary, so the JSON key can map to custom Property key.
+```swift
+// Define a Map Struct and override mapping() return, you can map the JSON key to Custom Property key
+class MapStruct: PPJSONSerialization {
+    override func mapping() -> [String : String] {
+        return ["mapStr": "simpleStr"]
+    }
+    
+    var simpleStr = ""
+}
+func testMapping() {
+  let simpleJSON = "\"mapStr\": \"String Value\""
+  if let simpleObject = MapStruct(JSONString: simpleJSON) {
+    XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
   }
 }
 ```
