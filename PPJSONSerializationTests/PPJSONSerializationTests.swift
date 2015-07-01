@@ -55,6 +55,11 @@ class PPJSONSerializationTests: XCTestCase {
         super.tearDown()
     }
     
+    func testErrorJSON() {
+        let errorJSON = "I have a dream!"
+        XCTAssert(SimpleStruct(JSONString: errorJSON) == nil, "Pass")
+    }
+    
     func testSimpleParser() {
         let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
         if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
