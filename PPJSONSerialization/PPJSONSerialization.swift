@@ -78,6 +78,24 @@ class PPJSONSerialization: NSObject, NSCopying {
         });
     }
     
+    internal func JSONString() -> String {
+        if let JSONString = NSString(data: JSONData(), encoding: NSUTF8StringEncoding) {
+            return JSONString
+        }
+        else {
+            return ""
+        }
+    }
+    
+    internal func JSONData() -> NSData {
+        if let JSONData = NSJSONSerialization.dataWithJSONObject(convertAsAnyObject(), options: nil, error: nil) {
+            return JSONData
+        }
+        else {
+            return NSData()
+        }
+    }
+    
     // The following code is private
     
     private let rootKey = ""
@@ -184,6 +202,88 @@ class PPJSONSerialization: NSObject, NSCopying {
             resetEmptyArray()
         }
         return true
+    }
+    
+    private func convertAsAnyObject() -> AnyObject {
+        if respondsToSelector("root") {
+            if let propertyValue: NSArray = valueForKey("root") as? NSArray {
+                return convertAsArray()
+            }
+        }
+        return conventAsDictionary()
+    }
+    
+    private func convertAsArray() -> [AnyObject] {
+        if respondsToSelector("root") {
+            if let propertyArrayValue: NSArray = valueForKey("root") as? NSArray {
+                if let propertyNSObjectValue: NSObject = propertyArrayValue.firstObject as? NSObject {
+                    var JSONArray = NSMutableArray()
+                    if let propertyPPValue: PPJSONSerialization = propertyNSObjectValue as? PPJSONSerialization {
+                        for propertyArrayItem in propertyArrayValue {
+                            if let propertyArrayPPItem: PPJSONSerialization = propertyArrayItem as? PPJSONSerialization {
+                                JSONArray.addObject(propertyArrayPPItem.convertAsAnyObject())
+                            }
+                        }
+                    }
+                    else {
+                        for propertyArrayItem in propertyArrayValue {
+                            JSONArray.addObject(propertyArrayItem)
+                        }
+                    }
+                    return JSONArray
+                }
+            }
+        }
+        return []
+    }
+    
+    private func conventAsDictionary() -> [String: AnyObject] {
+        var JSONDictionary = [String: AnyObject]()
+        let mirror = reflect(self)
+        let count = mirror.count
+        for var index = 0; index < count; ++index {
+            let key = mirror[index].0
+            
+            if key == "super" && index == 0 {
+                continue
+            }
+            if let propertyValue: NSObject = valueForKey(key) as? NSObject {
+                switch classForInstance(propertyValue) {
+                case PPJSONValueType.Number:
+                    JSONDictionary[key] = propertyValue
+                    break;
+                case PPJSONValueType.String:
+                    JSONDictionary[key] = propertyValue
+                    break;
+                case PPJSONValueType.Array:
+                    if let propertyArrayValue: NSArray = propertyValue as? NSArray {
+                        if let propertyNSObjectValue: NSObject = propertyArrayValue.firstObject as? NSObject {
+                            var JSONArray = NSMutableArray()
+                            if let propertyPPValue: PPJSONSerialization = propertyNSObjectValue as? PPJSONSerialization {
+                                for propertyArrayItem in propertyArrayValue {
+                                    if let propertyArrayPPItem: PPJSONSerialization = propertyArrayItem as? PPJSONSerialization {
+                                        JSONArray.addObject(propertyArrayPPItem.convertAsAnyObject())
+                                    }
+                                }
+                            }
+                            else {
+                                for propertyArrayItem in propertyArrayValue {
+                                    JSONArray.addObject(propertyArrayItem)
+                                }
+                            }
+                            JSONDictionary[key] = JSONArray
+                        }
+                    }
+                    break;
+                default:
+                    if let propertyPPValue: PPJSONSerialization = propertyValue as? PPJSONSerialization {
+                        JSONDictionary[key] = propertyPPValue.convertAsAnyObject()
+                    }
+                    break;
+                }
+            }
+        }
+        return JSONDictionary
     }
     
     private func classForInstance(instance: AnyObject) -> PPJSONValueType {
