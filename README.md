@@ -95,7 +95,7 @@ class MapStruct: PPJSONSerialization {
     var simpleStr = ""
 }
 func testMapping() {
-  let simpleJSON = "\"mapStr\": \"String Value\""
+  let simpleJSON = "{\"mapStr\": \"String Value\"}"
   if let simpleObject = MapStruct(JSONString: simpleJSON) {
     XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
   }
