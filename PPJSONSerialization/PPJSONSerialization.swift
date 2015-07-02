@@ -80,7 +80,7 @@ class PPJSONSerialization: NSObject, NSCopying {
     
     internal func JSONString() -> String {
         if let JSONString = NSString(data: JSONData(), encoding: NSUTF8StringEncoding) {
-            return JSONString
+            return JSONString as String
         }
         else {
             return ""
@@ -230,7 +230,7 @@ class PPJSONSerialization: NSObject, NSCopying {
                             JSONArray.addObject(propertyArrayItem)
                         }
                     }
-                    return JSONArray
+                    return JSONArray as [AnyObject]
                 }
             }
         }
