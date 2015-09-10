@@ -162,6 +162,8 @@
 		631020801B429C7200A97115 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0630;
 				ORGANIZATIONNAME = PonyCui;
 				TargetAttributes = {
