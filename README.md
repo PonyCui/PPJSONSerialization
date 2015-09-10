@@ -118,8 +118,8 @@ PPJSONSerialization is still in development, welcome to improve the project toge
 
 ## Requirements
 * iOS 7.0+ / Mac OS X 10.10+
-* Xcode 6.3
-* Not support Xcode7.0 beta, because Swift2.0 change a lot, we will support it after Swift2.0 release.
+* Xcode 7.0
+* Swift 2.0
 
 ## Integration
 Add ```PPJSONSerialization.swift``` into your project, that's enough
