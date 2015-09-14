@@ -186,7 +186,7 @@ class PPJSONSerialization: NSObject, NSCopying {
             }
             else {
                 if respondsToSelector(NSSelectorFromString(propertyKey)) {
-                    if let propertyArray = self.valueForKey(propertyKey) as? NSArray {
+                    if nil != self.valueForKey(propertyKey) as? NSArray {
                         setValue(NSArray(), forKey: propertyKey)
                     }
                     else if let propertyObject = self.valueForKey(propertyKey) as? PPJSONSerialization {
@@ -206,7 +206,7 @@ class PPJSONSerialization: NSObject, NSCopying {
     
     private func convertAsAnyObject() -> AnyObject {
         if respondsToSelector("root") {
-            if let propertyValue: NSArray = valueForKey("root") as? NSArray {
+            if nil != valueForKey("root") as? NSArray {
                 return convertAsArray()
             }
         }
@@ -218,7 +218,7 @@ class PPJSONSerialization: NSObject, NSCopying {
             if let propertyArrayValue: NSArray = valueForKey("root") as? NSArray {
                 if let propertyNSObjectValue: NSObject = propertyArrayValue.firstObject as? NSObject {
                     let JSONArray = NSMutableArray()
-                    if let propertyPPValue: PPJSONSerialization = propertyNSObjectValue as? PPJSONSerialization {
+                    if nil != propertyNSObjectValue as? PPJSONSerialization {
                         for propertyArrayItem in propertyArrayValue {
                             if let propertyArrayPPItem: PPJSONSerialization = propertyArrayItem as? PPJSONSerialization {
                                 JSONArray.addObject(propertyArrayPPItem.convertAsAnyObject())
