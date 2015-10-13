@@ -117,9 +117,9 @@ class PPJSONSerialization: NSObject {
                             var JSONValue: AnyObject?
                             if let childValue = childValue as? NSObject {
                                 if childValue.respondsToSelector("updateWithPPJSONObject:generatorType:") {
-                                    if let returnValue = childValue.performSelector("updateWithPPJSONObject:generatorType:", withObject: JSONArrayObject, withObject: "\(childMirror.subjectType)") as? AnyObject {
-                                        JSONValue = returnValue
-                                    }
+                                    let returnValue = childValue.performSelector("updateWithPPJSONObject:generatorType:", withObject: JSONArrayObject, withObject: "\(childMirror.subjectType)")
+                                    let retainValue = returnValue.takeUnretainedValue()
+                                    JSONValue = retainValue
                                 }
                             }
                             if JSONValue != nil {
@@ -185,10 +185,42 @@ class PPJSONValueFormatter {
 extension NSArray {
     
     func updateWithPPJSONObject(PPJSONObject: AnyObject!, generatorType: String!) -> AnyObject! {
-        print(generatorType)
-        print("123123")
-        return ""
-//        print(PPJSONObject)
+        if PPJSONObject == nil {
+            return []
+        }
+        let maxLevel = generatorType.componentsSeparatedByString("Array").count - 1
+        if let JSONObject = PPJSONObject as? [AnyObject] {
+            return nextLevel(JSONObject, currentLevel: 1, maxLevel: maxLevel, generatorType: generatorType)
+        }
+        else {
+            return []
+        }
+    }
+    
+    func nextLevel(node: [AnyObject], currentLevel: Int, maxLevel: Int, generatorType: String!) -> [AnyObject] {
+        var items = [AnyObject]()
+        if currentLevel < maxLevel {
+            for subNode in node {
+                if let subNode = subNode as? [AnyObject] {
+                    let item = nextLevel(subNode, currentLevel: currentLevel+1, maxLevel: maxLevel, generatorType: generatorType)
+                    items.append(item)
+                }
+            }
+            return items
+        }
+        else {
+            if generatorType.containsString("Int") || generatorType.containsString("Double") {
+                for item in node {
+                    items.append(PPJSONValueFormatter.numberValue(item))
+                }
+            }
+            else if generatorType.containsString("String") {
+                for item in node {
+                    items.append(PPJSONValueFormatter.stringValue(item))
+                }
+            }
+            return items
+        }
     }
     
 }
