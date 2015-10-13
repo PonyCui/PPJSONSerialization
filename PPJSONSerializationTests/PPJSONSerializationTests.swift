@@ -18,7 +18,7 @@ class SimpleStruct: PPJSONSerialization {
     var simpleBool:Bool = false
     var simpleDouble = 0.0
     var simpleArray = [Int]()
-    var simpleRoom: RoomStruct?
+    var simpleRoom = [String: Int]()
     var doubleArray = [[Int]]()
     var doubleDoubleArray = [[Double]]()
     var doubleStringArray = [[String]]()
@@ -75,9 +75,6 @@ class PPJSONSerializationTests: XCTestCase {
 //    }
 //    
     func testSimpleParser() {
-        
-        let d = RoomStruct()
-        
         
         let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4], \"doubleArray\": [[1,0,2,4]], \"doubleDoubleArray\": [[1,0,2,4]], \"doubleStringArray\": [[\"1\",\"0\",\"2\",\"4\"]], \"simpleRoom\":{\"roomNumber\":632, \"roomSize\":6.6}}"
         if let simpleObject = SimpleStruct(JSONString: simpleJSON) {

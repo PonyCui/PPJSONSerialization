@@ -139,6 +139,44 @@ class PPJSONSerialization: NSObject {
                     else if let JSONValue = PPJSONValueFormatter.value(JSONObject[childKey], eagerType: childMirror.subjectType) {
                         self.setValue(JSONValue, forKey: childKey)
                     }
+                    else if "\(childMirror.subjectType)".hasPrefix("Dictionary") {
+                        if var childValue = childValue as? [String: String] {
+                            
+                        }
+                        else if let _ = childValue as? [String: Int] {
+                            self.setValue(PPJSONSerialization.dictionaryWithStringInt(JSONObject[childKey]), forKey: childKey)
+                        }
+                        else if var childValue = childValue as? [String: Double] {
+                            
+                        }
+                        else if var childValue = childValue as? [String: Bool] {
+                            
+                        }
+                        else if var childValue = childValue as? [Int: String] {
+                            
+                        }
+                        else if var childValue = childValue as? [Int: Int] {
+                            
+                        }
+                        else if var childValue = childValue as? [Int: Double] {
+                            
+                        }
+                        else if var childValue = childValue as? [Int: Bool] {
+                            
+                        }
+                        else if var childValue = childValue as? [Double: String] {
+                            
+                        }
+                        else if var childValue = childValue as? [Double: Int] {
+                            
+                        }
+                        else if var childValue = childValue as? [Double: Double] {
+                            
+                        }
+                        else if var childValue = childValue as? [Double: Bool] {
+                            
+                        }
+                    }
                 }
             }
         }
@@ -258,92 +296,18 @@ extension NSArray {
     
 }
 
-extension Array {
+extension PPJSONSerialization {
     
-    func update(PPJSONObject: [AnyObject]?, arrayLevel: Int = 1) -> [AnyObject]? {
-        if let PPJSONObject = PPJSONObject {
-            let arrayMirror = Mirror(reflecting: self)
-            let typeString = "\(arrayMirror.subjectType)"
-            if typeString.containsString("<Int>") {
-                if arrayLevel == 1 {
-                    var items = [Int]()
-                    for item in PPJSONObject {
-                        if let item = item as? Int {
-                            items.append(item)
-                        }
-                    }
-                    return items
+    static func dictionaryWithStringInt(PPJSONObject: AnyObject?) -> [String: Int] {
+        var result = [String: Int]()
+        if let PPJSONObject = PPJSONObject as? NSDictionary {
+            PPJSONObject.enumerateKeysAndObjectsUsingBlock({ (JSONKey, JSONValue, needStop) -> Void in
+                if let JSONKey = JSONKey as? String, let JSONValue = JSONValue as? Int {
+                    result.updateValue(JSONValue, forKey: JSONKey)
                 }
-                else if arrayLevel == 2 {
-                    var itemss = [[Int]]()
-                    for firstDegree in PPJSONObject {
-                        if let firstDegree = firstDegree as? [AnyObject] {
-                            var items = [Int]()
-                            for item in firstDegree {
-                                if let item = item as? Int {
-                                    items.append(item)
-                                }
-                            }
-                            itemss.append(items)
-                        }
-                    }
-                    return itemss
-                }
-            }
-            else if typeString.containsString("<Double>") {
-                if arrayLevel == 1 {
-                    var items = [Double]()
-                    for item in PPJSONObject {
-                        if let item = item as? Double {
-                            items.append(item)
-                        }
-                    }
-                    return items
-                }
-                else if arrayLevel == 2 {
-                    var itemss = [[Double]]()
-                    for firstDegree in PPJSONObject {
-                        if let firstDegree = firstDegree as? [AnyObject] {
-                            var items = [Double]()
-                            for item in firstDegree {
-                                if let item = item as? Double {
-                                    items.append(item)
-                                }
-                            }
-                            itemss.append(items)
-                        }
-                    }
-                    return itemss
-                }
-            }
-            else if typeString.containsString("<String>") {
-                if arrayLevel == 1 {
-                    var items = [String]()
-                    for item in PPJSONObject {
-                        if let item = item as? String {
-                            items.append(item)
-                        }
-                    }
-                    return items
-                }
-                else if arrayLevel == 2 {
-                    var itemss = [[String]]()
-                    for firstDegree in PPJSONObject {
-                        if let firstDegree = firstDegree as? [AnyObject] {
-                            var items = [String]()
-                            for item in firstDegree {
-                                if let item = item as? String {
-                                    items.append(item)
-                                }
-                            }
-                            itemss.append(items)
-                        }
-                    }
-                    return itemss
-                }
-            }
+            })
         }
-        return nil
+        return result
     }
     
 }
