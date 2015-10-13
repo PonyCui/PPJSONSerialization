@@ -31,6 +31,16 @@ class PPJSONSerialization: NSObject {
 //        super.init()
 //    }
 //    
+    
+    static func frameworkName() -> String {
+        let name = NSStringFromClass(self)
+        return name.stringByReplacingOccurrencesOfString(".PPJSONSerialization", withString: "")
+    }
+    
+    override init() {
+        super.init()
+    }
+    
     init?(JSONData: NSData) {
         super.init()
         if self.updateWithJSONData(JSONData) == false {
@@ -152,6 +162,17 @@ class PPJSONValueFormatter {
             else if eagerType == Bool.self {
                 return numberValue(originValue).boolValue
             }
+            else {
+                let typeString = "\(eagerType)".stringByReplacingOccurrencesOfString("Optional", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
+                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(typeString)") {
+                    if let NSObjectType = instanceClass as? NSObject.Type {
+                        if let instance = NSObjectType.init() as? PPJSONSerialization {
+                            instance.update(originValue)
+                            return instance
+                        }
+                    }
+                }
+            }
         }
         return nil
     }
@@ -217,6 +238,18 @@ extension NSArray {
             else if generatorType.containsString("String") {
                 for item in node {
                     items.append(PPJSONValueFormatter.stringValue(item))
+                }
+            }
+            else {
+                let nodeClass = generatorType.stringByReplacingOccurrencesOfString("Array", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
+                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(nodeClass)") {
+                    if let NSObjectType = instanceClass as? NSObject.Type {
+                        for item in node {
+                            if let instance = NSObjectType.init() as? PPJSONSerialization {
+                                instance.update(item)
+                            }
+                        }
+                    }
                 }
             }
             return items
