@@ -18,7 +18,10 @@ class SimpleStruct: PPJSONSerialization {
     var simpleBool:Bool = false
     var simpleDouble = 0.0
     var simpleArray = [Int]()
+    var simpleRoom = [RoomStruct]()
     var doubleArray = [[Int]]()
+    var doubleDoubleArray = [[Double]]()
+    var doubleStringArray = [[String]]()
 }
 
 //// Define an Array Struct to deal with the array JSON
@@ -34,16 +37,16 @@ class SimpleStruct: PPJSONSerialization {
 //}
 //
 //// Define a Room Struct to handle sub dictionary JSON
-//class RoomStruct: PPJSONSerialization {
-//    var roomNumber = 0
-//    var roomSize: Double = 0.0
-//    var roomMates = [""]
-//    
-//    // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
-////    override func copyWithZone(zone: NSZone) -> AnyObject {
-////        return RoomStruct()
-////    }
-//}
+class RoomStruct: PPJSONSerialization {
+    var roomNumber = 0
+    var roomSize: Double = 0.0
+    var roomMates = [""]
+    
+    // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
+//    override func copyWithZone(zone: NSZone) -> AnyObject {
+//        return RoomStruct()
+//    }
+}
 
 // Define a Map Struct and override mapping() return, you can map the JSON key to Custom Property key
 class MapStruct: PPJSONSerialization {
@@ -72,7 +75,7 @@ class PPJSONSerializationTests: XCTestCase {
 //    }
 //    
     func testSimpleParser() {
-        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4], \"doubleArray\": [[1,0,2,4]]}"
+        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4], \"doubleArray\": [[1,0,2,4]], \"doubleDoubleArray\": [[1,0,2,4]], \"doubleStringArray\": [[\"1\",\"0\",\"2\",\"4\"]]}"
         if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
             XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
             XCTAssert(simpleObject.simpleInt == 1024, "Pass")
@@ -86,6 +89,14 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(simpleObject.doubleArray[0][1] == 0, "Pass")
             XCTAssert(simpleObject.doubleArray[0][2] == 2, "Pass")
             XCTAssert(simpleObject.doubleArray[0][3] == 4, "Pass")
+            XCTAssert(simpleObject.doubleDoubleArray[0][0] == 1.0, "Pass")
+            XCTAssert(simpleObject.doubleDoubleArray[0][1] == 0.0, "Pass")
+            XCTAssert(simpleObject.doubleDoubleArray[0][2] == 2.0, "Pass")
+            XCTAssert(simpleObject.doubleDoubleArray[0][3] == 4.0, "Pass")
+            XCTAssert(simpleObject.doubleStringArray[0][0] == "1", "Pass")
+            XCTAssert(simpleObject.doubleStringArray[0][1] == "0", "Pass")
+            XCTAssert(simpleObject.doubleStringArray[0][2] == "2", "Pass")
+            XCTAssert(simpleObject.doubleStringArray[0][3] == "4", "Pass")
         }
         else {
             XCTAssert(false, "JSON Parser Failable")

@@ -115,26 +115,12 @@ class PPJSONSerialization: NSObject {
                     if "\(childMirror.subjectType)".hasPrefix("Array"),
                         let JSONArrayObject = JSONObject[childKey] as? [AnyObject] {
                             var JSONValue: AnyObject?
-                            if let childValue = childValue as? [Int] {
-                                JSONValue = childValue.update(JSONArrayObject)
-                            }
-                            if let childValue = childValue as? [Double] {
-                                JSONValue = childValue.update(JSONArrayObject)
-                            }
-                            if let childValue = childValue as? [String] {
-                                JSONValue = childValue.update(JSONArrayObject)
-                            }
-                            if let childValue = childValue as? [[Int]] {
-                                JSONValue = childValue.update(JSONArrayObject, arrayLevel: 2)
-                            }
-                            if let childValue = childValue as? [[Double]] {
-                                JSONValue = childValue.update(JSONArrayObject, arrayLevel: 2)
-                            }
-                            if let childValue = childValue as? [[String]] {
-                                JSONValue = childValue.update(JSONArrayObject, arrayLevel: 2)
-                            }
-                            if let childValue = childValue as? [Any] {
-                                JSONValue = childValue.update(JSONArrayObject)
+                            if let childValue = childValue as? NSObject {
+                                if childValue.respondsToSelector("updateWithPPJSONObject:generatorType:") {
+                                    if let returnValue = childValue.performSelector("updateWithPPJSONObject:generatorType:", withObject: JSONArrayObject, withObject: "\(childMirror.subjectType)") as? AnyObject {
+                                        JSONValue = returnValue
+                                    }
+                                }
                             }
                             if JSONValue != nil {
                                 self.setValue(JSONValue, forKey: childKey)
@@ -196,6 +182,17 @@ class PPJSONValueFormatter {
     
 }
 
+extension NSArray {
+    
+    func updateWithPPJSONObject(PPJSONObject: AnyObject!, generatorType: String!) -> AnyObject! {
+        print(generatorType)
+        print("123123")
+        return ""
+//        print(PPJSONObject)
+    }
+    
+}
+
 extension Array {
     
     func update(PPJSONObject: [AnyObject]?, arrayLevel: Int = 1) -> [AnyObject]? {
@@ -219,6 +216,58 @@ extension Array {
                             var items = [Int]()
                             for item in firstDegree {
                                 if let item = item as? Int {
+                                    items.append(item)
+                                }
+                            }
+                            itemss.append(items)
+                        }
+                    }
+                    return itemss
+                }
+            }
+            else if typeString.containsString("<Double>") {
+                if arrayLevel == 1 {
+                    var items = [Double]()
+                    for item in PPJSONObject {
+                        if let item = item as? Double {
+                            items.append(item)
+                        }
+                    }
+                    return items
+                }
+                else if arrayLevel == 2 {
+                    var itemss = [[Double]]()
+                    for firstDegree in PPJSONObject {
+                        if let firstDegree = firstDegree as? [AnyObject] {
+                            var items = [Double]()
+                            for item in firstDegree {
+                                if let item = item as? Double {
+                                    items.append(item)
+                                }
+                            }
+                            itemss.append(items)
+                        }
+                    }
+                    return itemss
+                }
+            }
+            else if typeString.containsString("<String>") {
+                if arrayLevel == 1 {
+                    var items = [String]()
+                    for item in PPJSONObject {
+                        if let item = item as? String {
+                            items.append(item)
+                        }
+                    }
+                    return items
+                }
+                else if arrayLevel == 2 {
+                    var itemss = [[String]]()
+                    for firstDegree in PPJSONObject {
+                        if let firstDegree = firstDegree as? [AnyObject] {
+                            var items = [String]()
+                            for item in firstDegree {
+                                if let item = item as? String {
                                     items.append(item)
                                 }
                             }
