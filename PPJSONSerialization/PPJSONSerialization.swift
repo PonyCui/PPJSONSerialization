@@ -109,11 +109,13 @@ class PPJSONSerialization: NSObject {
         let objectMirror = Mirror(reflecting: self)
         for objectProperty in objectMirror.children {
             if let propertyKey = objectProperty.label {
+                if !hasGetter(propertyKey) {
+                    continue
+                }
                 let propertyValue = objectProperty.value
                 let propertyMirror = Mirror(reflecting: propertyValue)
                 let propertyType = "\(propertyMirror.subjectType)"
                 if let JSONObject = JSONObject as? [String: AnyObject] {
-                    //root data must a dictionary
                     if propertyType.hasPrefix("Array") {
                         self.setValue(NSArray(), forKey: propertyKey)
                         parseArray(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
@@ -177,11 +179,21 @@ class PPJSONSerialization: NSObject {
         
     }
     
+    private func hasSetter(propertyKey: String) -> Bool {
+        return respondsToSelector(Selector("set\(propertyKey.capitalizedString):"))
+    }
+    
+    private func hasGetter(propertyKey: String) -> Bool {
+        return respondsToSelector(Selector("\(propertyKey)"))
+    }
+    
     private func fetchJSONObject(JSONObject: [String: AnyObject], propertyKey: String) -> AnyObject? {
         let rMapping = reverseMapping()
         if rMapping.count > 0 {
             if let JSONKey = rMapping[propertyKey] {
-                return JSONObject[JSONKey]
+                if let returnValue = JSONObject[JSONKey] {
+                    return returnValue
+                }
             }
         }
         let aMapping = mapping()
@@ -258,22 +270,25 @@ class PPJSONArraySerialization: PPJSONSerialization {
 class PPJSONValueFormatter {
     
     static func value(originValue: AnyObject?, eagerTypeString: String) -> AnyObject? {
+        let trimedEagerTypeString = eagerTypeString.stringByReplacingOccurrencesOfString("Optional", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
         if let originValue = originValue {
-            if eagerTypeString == "String" {
+            if trimedEagerTypeString == "String" {
                 return stringValue(originValue)
             }
-            else if eagerTypeString == "Int" {
+            else if trimedEagerTypeString == "Int" {
                 return numberValue(originValue).integerValue
             }
-            else if eagerTypeString == "Double" {
+            else if trimedEagerTypeString == "Double" {
                 return numberValue(originValue).doubleValue
             }
-            else if eagerTypeString == "Bool" {
+            else if trimedEagerTypeString == "Bool" {
                 return numberValue(originValue).boolValue
             }
+            else if trimedEagerTypeString == "NSNumber" {
+                return numberValue(originValue)
+            }
             else {
-                let typeString = eagerTypeString.stringByReplacingOccurrencesOfString("Optional", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
-                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(typeString)") {
+                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(trimedEagerTypeString)") {
                     if let NSObjectType = instanceClass as? NSObject.Type {
                         if let instance = NSObjectType.init() as? PPJSONSerialization {
                             instance.parse(originValue)
