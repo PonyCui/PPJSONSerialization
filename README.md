@@ -35,6 +35,18 @@ if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
 }
 ```
 
+Or this
+
+```swift
+class SimpleStruct: PPJSONSerialization {
+    var simpleStr:String?
+    var simpleInt:Int = 0
+    var simpleBool:Bool = false
+    var simpleDouble:Double = 0.0
+    var simpleArray = [Int]()
+}
+```
+
 Don't worry about the type, you assign the type of a property in Struct, PPJSONSerialization will try to convert it from JSON.
 ```swift
 func testTypeTransfer() {
@@ -55,18 +67,13 @@ Struct may contains another Struct or even an Array contains Struct objects, PPJ
 class BuildingStruct: PPJSONSerialization {
     var buildNumber = ""
     var managementRoom = RoomStruct()
-    var buildRooms = [RoomStruct()]
+    var buildRooms = [RoomStruct]()
 }
 
 // Define a Room Struct to handle sub dictionary JSON
 class RoomStruct: PPJSONSerialization {
     var roomNumber = 0
     var roomSize: Double = 0.0
-    
-    // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
-    override func copyWithZone(zone: NSZone) -> AnyObject {
-        return RoomStruct()
-    }
 }
 
 func testDictionaryContainsJSON() {
@@ -91,7 +98,12 @@ class MapStruct: PPJSONSerialization {
     override func mapping() -> [String : String] {
         return ["mapStr": "simpleStr"]
     }
-    
+
+    //ReverseMapping is high priority then mapping
+    override func reverseMapping() -> [String : String] {
+        return ["simpleStr": "mapStr"]
+    }
+
     var simpleStr = ""
 }
 func testMapping() {
@@ -128,4 +140,5 @@ Add ```PPJSONSerialization.swift``` into your project, that's enough
 MIT License, Please feel free to use it.
 
 ## Thanks
-* Thanks for @onevcat suggest use Failable init
+* Thanks for @onevcat suggest use Failable init.
+* Thanks for @neil-wu using and reported issues.
