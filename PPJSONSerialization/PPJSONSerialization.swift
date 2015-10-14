@@ -91,14 +91,18 @@ class PPJSONSerialization: NSObject {
     }
     
     internal func JSONData() -> NSData {
-        return NSData()
-//        do {
-//            let JSONData = try NSJSONSerialization.dataWithJSONObject(convertAsAnyObject(), options: [])
-//            return JSONData
-//        }
-//        catch {
-//            return NSData()
-//        }
+        do {
+            if let JSONObject = serialize() {
+                let JSONData = try NSJSONSerialization.dataWithJSONObject(JSONObject, options: [])
+                return JSONData
+            }
+            else {
+                return NSData()
+            }
+        }
+        catch {
+            return NSData()
+        }
     }
     
     private func parse(JSONObject: AnyObject) -> Void {
@@ -191,9 +195,63 @@ class PPJSONSerialization: NSObject {
         return JSONObject[propertyKey]
     }
     
+    private func serialize() -> AnyObject? {
+        let output = NSMutableDictionary()
+        let objectMirror = Mirror(reflecting: self)
+        for objectProperty in objectMirror.children {
+            if let propertyKey = objectProperty.label, let propertyValue = objectProperty.value as? NSObject {
+                var JSONKey = propertyKey
+                if let _JSONKey = serializingJSONKey(propertyKey) {
+                    JSONKey = _JSONKey
+                }
+                let propertyMirror = Mirror(reflecting: objectProperty.value)
+                let propertyType = "\(propertyMirror.subjectType)"
+                if propertyType == "String" || propertyType == "Int" || propertyType == "Double" || propertyType == "Bool" {
+                    output.setValue(propertyValue, forKey: JSONKey)
+                }
+                else if propertyType.hasPrefix("Array") {
+                    if let arrayObject = propertyValue as? NSArray {
+                        output.setValue(arrayObject.serializeAsPPJSONObject(), forKey: JSONKey)
+                    }
+                }
+                else if let propertyValue = propertyValue as? PPJSONSerialization {
+                    if let nextOutput = propertyValue.serialize() {
+                        output.setValue(nextOutput, forKey: JSONKey)
+                    }
+                }
+            }
+        }
+        return output.copy()
+    }
+    
+    private func serializingJSONKey(propertyKey: String) -> String? {
+        let rMapping = reverseMapping()
+        if rMapping.count > 0 {
+            if let JSONKey = rMapping[propertyKey] {
+                return JSONKey
+            }
+        }
+        let aMapping = mapping()
+        if aMapping.count > 0 {
+            for (mapJSONKey, mapPropertyKey) in aMapping {
+                if mapPropertyKey == propertyKey {
+                    return mapJSONKey
+                }
+            }
+        }
+        return nil
+    }
+    
 }
 
 class PPJSONArraySerialization: PPJSONSerialization {
+    
+    private override func serialize() -> AnyObject? {
+        if self.respondsToSelector("root") {
+            return self.valueForKey("root")
+        }
+        return nil
+    }
     
 }
 
@@ -306,6 +364,24 @@ extension NSArray {
             }
             return items
         }
+    }
+    
+    func serializeAsPPJSONObject() -> AnyObject {
+        let items = NSMutableArray()
+        enumerateObjectsUsingBlock { (theObject, theIndex, stop) -> Void in
+            if let nextObject = theObject as? NSArray {
+                items.addObject(nextObject.serializeAsPPJSONObject())
+            }
+            else if let nextObject = theObject as? PPJSONSerialization {
+                if let nextSerializedObject = nextObject.serialize() {
+                    items.addObject(nextSerializedObject)
+                }
+            }
+            else {
+                items.addObject(theObject)
+            }
+        }
+        return items.copy()
     }
     
 }

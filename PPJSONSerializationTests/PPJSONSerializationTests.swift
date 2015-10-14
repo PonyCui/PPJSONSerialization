@@ -185,45 +185,45 @@ class PPJSONSerializationTests: XCTestCase {
     // The following test is serialize function
     
     func testSimpleSerialize() {
-//        let simpleObject = SimpleStruct()
-//        simpleObject.simpleStr = "String Value"
-//        simpleObject.simpleBool = true
-//        simpleObject.simpleInt = 1024
-//        simpleObject.simpleDouble = 1024.01
-//        simpleObject.simpleArray = [1, 0, 2, 4]
-//        let JSONString = simpleObject.JSONString()
-//        XCTAssert((JSONString as NSString).containsString("\"simpleStr\":\"String Value\""), "Pass")
-//        XCTAssert((JSONString as NSString).containsString("\"simpleBool\":true"), "Pass")
-//        XCTAssert((JSONString as NSString).containsString("\"simpleInt\":1024"), "Pass")
-//        XCTAssert((JSONString as NSString).containsString("\"simpleDouble\":1024.01"), "Pass")
-//        XCTAssert((JSONString as NSString).containsString("\"simpleArray\":[1,0,2,4]"), "Pass")
+        let simpleObject = SimpleStruct()
+        simpleObject.simpleStr = "String Value"
+        simpleObject.simpleBool = true
+        simpleObject.simpleInt = 1024
+        simpleObject.simpleDouble = 1024.01
+        simpleObject.simpleArray = [1, 0, 2, 4]
+        let JSONString = simpleObject.JSONString()
+        XCTAssert((JSONString as NSString).containsString("\"simpleStr\":\"String Value\""), "Pass")
+        XCTAssert((JSONString as NSString).containsString("\"simpleBool\":true"), "Pass")
+        XCTAssert((JSONString as NSString).containsString("\"simpleInt\":1024"), "Pass")
+        XCTAssert((JSONString as NSString).containsString("\"simpleDouble\":1024.01"), "Pass")
+        XCTAssert((JSONString as NSString).containsString("\"simpleArray\":[1,0,2,4]"), "Pass")
     }
     
     func testArraySerialize() {
-//        let arrayObject = ArrayStruct()
-//        arrayObject.root = [1, 0, 2, 4]
-//        XCTAssert(arrayObject.JSONString() == "[1,0,2,4]", "Pass")
+        let arrayObject = ArrayStruct()
+        arrayObject.root = [1, 0, 2, 4]
+        XCTAssert(arrayObject.JSONString() == "[1,0,2,4]", "Pass")
     }
     
     func testBuildingSerialize() {
-//        let buildingObject = BuildingStruct()
-//        buildingObject.buildNumber = "B"
-//        buildingObject.managementRoom.roomNumber = 101
-//        buildingObject.managementRoom.roomSize = 10.14
-//        buildingObject.managementRoom.roomMates = ["Pony", "Chunge"]
-//        buildingObject.buildRooms = []
-//        let roomObjectA = RoomStruct()
-//        roomObjectA.roomNumber = 632
-//        roomObjectA.roomSize = 6.6
-//        roomObjectA.roomMates = ["Lin", "Zeng"]
-//        buildingObject.buildRooms.append(roomObjectA)
-//        let roomObjectB = RoomStruct()
-//        roomObjectB.roomNumber = 633
-//        roomObjectB.roomSize = 7.6
-//        roomObjectB.roomMates = ["Sun"]
-//        buildingObject.buildRooms.append(roomObjectB)
-//        let JSONString = buildingObject.JSONString()
-//        XCTAssert(JSONString == "{\"buildNumber\":\"B\",\"managementRoom\":{\"roomSize\":10.14,\"roomNumber\":101,\"roomMates\":[\"Pony\",\"Chunge\"]},\"buildRooms\":[{\"roomSize\":6.6,\"roomNumber\":632,\"roomMates\":[\"Lin\",\"Zeng\"]},{\"roomSize\":7.6,\"roomNumber\":633,\"roomMates\":[\"Sun\"]}]}", "Pass")
+        let buildingObject = BuildingStruct()
+        buildingObject.buildNumber = "B"
+        buildingObject.managementRoom.roomNumber = 101
+        buildingObject.managementRoom.roomSize = 10.14
+        buildingObject.managementRoom.roomMates = ["Pony", "Chunge"]
+        buildingObject.buildRooms = []
+        let roomObjectA = RoomStruct()
+        roomObjectA.roomNumber = 632
+        roomObjectA.roomSize = 6.6
+        roomObjectA.roomMates = ["Lin", "Zeng"]
+        buildingObject.buildRooms.append(roomObjectA)
+        let roomObjectB = RoomStruct()
+        roomObjectB.roomNumber = 633
+        roomObjectB.roomSize = 7.6
+        roomObjectB.roomMates = ["Sun"]
+        buildingObject.buildRooms.append(roomObjectB)
+        let JSONString = buildingObject.JSONString()
+        XCTAssert(JSONString == "{\"buildNumber\":\"B\",\"managementRoom\":{\"roomSize\":10.14,\"roomMates\":[\"Pony\",\"Chunge\"],\"roomNumber\":101},\"buildRooms\":[{\"roomSize\":6.6,\"roomMates\":[\"Lin\",\"Zeng\"],\"roomNumber\":632},{\"roomSize\":7.6,\"roomMates\":[\"Sun\"],\"roomNumber\":633}]}", "Pass")
     }
     
 }
