@@ -135,9 +135,6 @@ class PPJSONSerialization: NSObject {
                         parseArray(JSONObject, propertyKey: "root", propertyType: propertyType)
                     }
                 }
-                else {
-                    assertionFailure("Root must be Dictionary")
-                }
             }
         }
     }
