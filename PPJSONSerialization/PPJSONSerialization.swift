@@ -218,7 +218,7 @@ class PPJSONSerialization: NSObject {
                 }
                 let propertyMirror = Mirror(reflecting: objectProperty.value)
                 let propertyType = "\(propertyMirror.subjectType)"
-                if propertyType == "String" || propertyType == "Int" || propertyType == "Double" || propertyType == "Bool" {
+                if propertyType == "String" || propertyType == "Int" || propertyType == "Double" || propertyType == "Bool" || propertyType == "NSNumber" {
                     output.setValue(propertyValue, forKey: JSONKey)
                 }
                 else if propertyType.hasPrefix("Array") {
