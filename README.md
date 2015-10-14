@@ -87,7 +87,7 @@ The swift array always request a generic type define, you can't store another ty
 
 PPJSONSerialization will handle this.
 
-For example, you define a property ```friends```, all its member is ```String``` value. 
+For example, you define a property ```friends```, all its member is ```String``` value.
 
 ```swift
 class Artist: PPJSONSerialization {
@@ -234,7 +234,7 @@ Sometimes, network data key column is different to app's, there's relly simple w
 class Artist: PPJSONSerialization {
     var name: String = ""
     var height: Double = 0.0
-    
+
     override func mapping() -> [String : String] {
         return ["xxxname": "name"]
     }
@@ -254,7 +254,7 @@ You use serialize to serialize PPJSONSerialization classes to JSON String or JSO
 
 ```swift
 class Artist: PPJSONSerialization {
-    var name: String = "" // Note that, optional value is not serialize to string always!
+    var name: String = "" // ~~~Note that, optional value is not serialize to string always!~~~
     var height: Double = 0.0
 }
 
