@@ -275,6 +275,7 @@ extension NSArray {
                         for item in node {
                             if let instance = NSObjectType.init() as? PPJSONSerialization {
                                 instance.parse(item)
+                                items.append(instance)
                             }
                         }
                     }
