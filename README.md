@@ -1,129 +1,273 @@
 # PPJSONSerialization [中文介绍](https://github.com/PonyCui/PPJSONSerialization/wiki)
+
 ## Introduce
-PPJSONSerialization is a Swift JSON Helper Library, it helps you to convert JSON string to Swift Class.
+There's a library, he make everything easier, faster, and safer.
 
-Thanks for SwiftyJSON(https://github.com/SwiftyJSON/SwiftyJSON) brings a great way to deal with JSON, and it's convenience for us.
+It's a library, which handles all JSON operation in one class.
 
-The way you use SwiftyJSON like this.
+As we known, the JSON result always or sometimes make our app crash, because we don't even know that JSON data is completely correct. And we have Swift now! Swift is completely strong type and type safe. So, why should we still using Objective-C and Other JSON library?
+
+## Usage
+
+### Easy Startup
+
+* Just add ```PPJSONSerialization.swift``` to project (I'm not planning to publish it to CocoaPods, it's a tiny library.)
+
+* Create your own class and subclass PPJSONSerialization
 
 ```swift
-let json = JSON(data: dataFromNetworking)
-if let userName = json[0]["user"]["name"].string{
-  //Now you got your value
+class Artist: PPJSONSerialization {
+  var name: String?
+  var height: Double = 0.0
 }
 ```
 
-In my opinion, Apple gaves us a strong type language, why should we still using the old type (Obj-C) codeing?
-
-So, the way you use PPJSONSerialization may like this
+* Fetch data from network and create an instance of your own class
 
 ```swift
-// Define a Simple Struct;
-// Be careful, All Struct are not support dictionary type;
-// All properties must provide default value and type.
-class SimpleStruct: PPJSONSerialization {
-    var simpleStr = ""
-    var simpleInt = 0
-    var simpleBool = false
-    var simpleDouble = 0.0
-    var simpleArray = [0]
-}
+let mockString = "{\"name\": \"Pony Cui\", \"height\": 164.0}"
+let artistData = Artist(JSONString: mockString)
+```
 
-let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
-if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
-  print(simpleObject.simpleStr) // Use the JSON value as an object
+* Now, you can use it briefly
+```swift
+if let artistData = Artist(JSONString: mockString) {
+  print(artistData.name)
+  print(artistData.height)
 }
 ```
 
-Or this
+### Features
 
+#### Type transfer
+
+Remember we set ```height``` as ```Double``` in ```Artist``` Classes?
+
+If the JSON type is in-correct, the most library will discard the result, or gives you an error message.
+
+But PPJSONSerialization will try to convert it to ```Double```
+
+For example
 ```swift
-class SimpleStruct: PPJSONSerialization {
-    var simpleStr:String?
-    var simpleInt:Int = 0
-    var simpleBool:Bool = false
-    var simpleDouble:Double = 0.0
-    var simpleArray = [Int]()
+let mockString = "{\"name\": \"Pony Cui\", \"height\": \"164.0\"}" //height is a string value
+if let artistData = Artist(JSONString: mockString) {
+  print(artistData.name)
+  print(artistData.height) // Now it convert to Double, print 164.0
 }
 ```
 
-Don't worry about the type, you assign the type of a property in Struct, PPJSONSerialization will try to convert it from JSON.
+Type transfer now applys on string, double, int, bool
+
+#### Optional value
+
+The best feature in Swift is optional, PPJSONSerialization also support it.
+
 ```swift
-func testTypeTransfer() {
-  let typeErrorJSON = "{\"simpleStr\": 1024, \"simpleInt\": \"1024\", \"simpleBool\": null, \"simpleDouble\": \"Bool Value\", \"simpleArray\": {}}"
-  if let simpleObject = SimpleStruct(JSONString: typeErrorJSON) {
-    XCTAssert(simpleObject.simpleStr == "1024", "Pass")
-    XCTAssert(simpleObject.simpleInt == 1024, "Pass")
-    XCTAssert(simpleObject.simpleBool == false, "Pass")
-    XCTAssert(simpleObject.simpleDouble == 0.0, "Pass")
-    XCTAssert(simpleObject.simpleArray.count <= 0, "Pass")
-  }
+class Artist: PPJSONSerialization {
+  var name: String? // We define it as a optional value
+  var height: Double = 0.0
+}
+
+let mockString = "{\"height\": \"164.0\"}"
+
+if let artistData = Artist(JSONString: mockString) {
+    if let name = artistData.name {
+        print(name) // code will not execute, because the mockString doesn't contains name column.
+    }
 }
 ```
 
-Struct may contains another Struct or even an Array contains Struct objects, PPJSONSerialization can easily handle this case.
+#### Null crash or Invalid JSON
+
+Never worry about that, the failable init will gives you the opportunity deal with that. Null value will never never never set to instance.
+
+#### Array Generic support
+
+The swift array always request a generic type define, you can't store another type in it. But JSON can! That's not an easy working while we using Objective-C.
+
+PPJSONSerialization will handle this.
+
+For example, you define a property ```friends```, all its member is ```String``` value. 
+
 ```swift
-// Define a Building Struct to deal with dictionary contains JSON
-class BuildingStruct: PPJSONSerialization {
-    var buildNumber = ""
-    var managementRoom = RoomStruct()
-    var buildRooms = [RoomStruct]()
-}
-
-// Define a Room Struct to handle sub dictionary JSON
-class RoomStruct: PPJSONSerialization {
-    var roomNumber = 0
-    var roomSize: Double = 0.0
-}
-
-func testDictionaryContainsJSON() {
-  let dictionaryContainsJSON = "{\"buildNumber\": \"B\", \"managementRoom\":{\"roomNumber\":101, \"roomSize\":10.14}, \"buildRooms\":[{\"roomNumber\":632, \"roomSize\":6.6}, {\"roomNumber\":633, \"roomSize\":6.7}]}"
-  if let buildingObject = BuildingStruct(JSONString: dictionaryContainsJSON) {
-    XCTAssert(buildingObject.buildNumber == "B", "Pass")
-    XCTAssert(buildingObject.managementRoom.roomNumber == 101, "Pass")
-    XCTAssert(buildingObject.managementRoom.roomSize == 10.14, "Pass")
-    XCTAssert(buildingObject.buildRooms.count == 2, "Pass")
-    XCTAssert(buildingObject.buildRooms[0].roomNumber == 632, "Pass")
-    XCTAssert(buildingObject.buildRooms[0].roomSize == 6.6, "Pass")
-    XCTAssert(buildingObject.buildRooms[1].roomNumber == 633, "Pass")
-    XCTAssert(buildingObject.buildRooms[1].roomSize == 6.7, "Pass")
-  }
+class Artist: PPJSONSerialization {
+    var name: String?
+    var height: Double = 0.0
+    var friends = [String]()
 }
 ```
 
-Override the mapping function and return your custom mapping Dictionary, so the JSON key can map to custom Property key.
+Just use it as below, note that we have 3 invalid types, but PPJSONSerialization will convert it.
+
 ```swift
-// Define a Map Struct and override mapping() return, you can map the JSON key to Custom Property key
-class MapStruct: PPJSONSerialization {
+let mockString = "{\"friends\": [\"Jack\", \"Leros\", \"Max\", \"LGY\", 1, 2, 3]}"
+
+if let artistData = Artist(JSONString: mockString) {
+    for friend in artistData.friends {
+        print(friend)
+    }
+}
+
+/*
+Prints:
+Jack
+Leros
+Max
+LGY
+1
+2
+3
+*/
+```
+
+#### Dictionary Generic support
+
+The dictionary generic is also support as Array. But I strongly recommend you use Sub-Struct to deal with Dictionary.
+
+```swift
+class Artist: PPJSONSerialization {
+    var name: String?
+    var height: Double = 0.0
+    var friendsHeight = [String: Double]() // now we change it as dictionary
+}
+
+let mockString = "{\"friendsHeight\": {\"Jack\": 170, \"Leros\": 180, \"Max\": 168, \"LGY\": 177}}"
+
+if let artistData = Artist(JSONString: mockString) {
+    for (friend, height) in artistData.friendsHeight {
+        print("\(friend), height:\(height)")
+    }
+}
+
+/*
+Prints:
+Leros, height:180.0
+Max, height:168.0
+LGY, height:177.0
+Jack, height:170.0
+*/
+```
+
+#### Custom Type (Sub-Struct)
+
+There's a really common situation is a dictionary contains another dictionary, you can use Dictionary Generic handle this, right? But, if you eager the model much easier to manage, or much pettier. Custom Type is really important for you.
+
+Note: Custom Type can use in Dictionary/Array/Property either.
+
+```swift
+class Artist: PPJSONSerialization {
+    var name: String?
+    var height: Double = 0.0
+    var friends = [ArtistFriend]()
+}
+
+// The Sub-Struct either subclasses PPJSONSerialization
+class ArtistFriend: PPJSONSerialization {
+    var name: String?
+    var height: Double = 0.0
+}
+
+let mockString = "{\"friends\": [{\"name\": \"Jack\", \"height\": \"177.0\"}, {\"name\": \"Max\", \"height\": \"188.0\"}]}"
+
+if let artistData = Artist(JSONString: mockString) {
+    for friend in artistData.friends {
+        print("\(friend.name), height:\(friend.height)")
+    }
+}
+
+/*
+Prints:
+Optional("Jack"), height:177.0
+Optional("Max"), height:188.0
+*/
+```
+
+#### Array JSON
+
+If the JSON is an array base struct. You should subclass ```PPJSONArraySerialization```, and define a property ```root``` with generic type.
+
+```swift
+class ArrayStruct: PPJSONArraySerialization {
+    var root = [Int]()
+}
+
+let arrayJSON = "[1,0,2,4]"
+if let arrayObject = ArrayStruct(JSONString: arrayJSON) {
+  XCTAssert(arrayObject.root.count == 4, "Pass")
+  XCTAssert(arrayObject.root[0] == 1, "Pass")
+  XCTAssert(arrayObject.root[1] == 0, "Pass")
+  XCTAssert(arrayObject.root[2] == 2, "Pass")
+  XCTAssert(arrayObject.root[3] == 4, "Pass")
+}
+```
+
+#### Multiple Dimension Array
+
+If the array contains array, it should define like this.
+
+```swift
+class MultipleDimensionArray: PPJSONSerialization {
+    var twoDimension = [[Int]]()
+    var threeDimension = [[[Int]]]()
+}
+
+let twoDimensionArrayJSON = "{\"twoDimension\": [[1,0,2,4], [1,0,2,4]]}"
+
+if let test = MultipleDimensionArray(JSONString: twoDimensionArrayJSON) {
+    XCTAssert(test.twoDimension[0][0] == 1, "Pass")
+    XCTAssert(test.twoDimension[0][1] == 0, "Pass")
+    XCTAssert(test.twoDimension[0][2] == 2, "Pass")
+    XCTAssert(test.twoDimension[0][3] == 4, "Pass")
+    XCTAssert(test.twoDimension[1][0] == 1, "Pass")
+    XCTAssert(test.twoDimension[1][1] == 0, "Pass")
+    XCTAssert(test.twoDimension[1][2] == 2, "Pass")
+    XCTAssert(test.twoDimension[1][3] == 4, "Pass")
+}
+
+```
+
+#### Key Mapping
+
+Sometimes, network data key column is different to app's, there's relly simple way to handle this. Override the mapping method, and return a dictionary contains ["JSONKey": "PropertyKey"]
+
+```
+class Artist: PPJSONSerialization {
+    var name: String = ""
+    var height: Double = 0.0
+    
     override func mapping() -> [String : String] {
-        return ["mapStr": "simpleStr"]
+        return ["xxxname": "name"]
     }
-
-    //ReverseMapping is high priority then mapping
-    override func reverseMapping() -> [String : String] {
-        return ["simpleStr": "mapStr"]
-    }
-
-    var simpleStr = ""
 }
-func testMapping() {
-  let simpleJSON = "{\"mapStr\": \"String Value\"}"
-  if let simpleObject = MapStruct(JSONString: simpleJSON) {
-    XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
-  }
+
+let mockString = "{\"xxxname\": \"Pony Cui\"}"
+
+if let artistData = Artist(JSONString: mockString) {
+    print(artistData.name)
 }
+
 ```
 
-PPJSONSerialization could serialize Class to JSON, just try the following code
+#### Serialize
+
+You use serialize to serialize PPJSONSerialization classes to JSON String or JSON Data, it's a perfect way to deliver data to server.
+
 ```swift
-let simpleObject = SimpleStruct()
-simpleObject.simpleStr = "String Value"
-simpleObject.simpleBool = true
-simpleObject.simpleInt = 1024
-simpleObject.simpleDouble = 1024.01
-simpleObject.simpleArray = [1, 0, 2, 4]
-let JSONString = simpleObject.JSONString()
-let JSONData = simpleObject.JSONData()
+class Artist: PPJSONSerialization {
+    var name: String = "" // Note that, optional value is not serialize to string always!
+    var height: Double = 0.0
+}
+
+let artistData = Artist()
+artistData.name = "Pony Cui"
+artistData.height = 164.0
+let string = artistData.JSONString()
+print(string)
+
+/*
+Prints: {"name":"Pony Cui","height":164}
+*/
+
 ```
 
 PPJSONSerialization is still in development, welcome to improve the project together.
