@@ -10,27 +10,15 @@ import Foundation
 
 class PPJSONSerialization: NSObject {
     
-    func debug() {
-        let serializationMirror = Mirror(reflecting: self)
-        print(serializationMirror.subjectType)
-        for child in serializationMirror.children {
-            let sMirror = Mirror(reflecting: child.value)
-            let typeString = "\(sMirror.subjectType)"
-            print(typeString)
-            print(child.label)
-            print(child.value)
-        }
+    /// Use mapping maps JSONKey to PropertyKey, [JSONKey: PropertyKey], Priorify Low
+    internal func mapping() -> [String: String] {
+        return [String: String]()
     }
     
-    /// Use mapping maps JSONKey to PropertyKey, [JSONKey: PropertyKey]
-//    internal func mapping() -> [String: String] {
-//        return [String: String]()
-//    }
-//    
-//    override init() {
-//        super.init()
-//    }
-//    
+    /// Use reverse mapping maps PropertyKey to JSONKey, [PropertyKey: JSONKey], Priority High
+    internal func reverseMapping() -> [String: String] {
+        return [String: String]()
+    }
     
     static func frameworkName() -> String {
         let name = NSStringFromClass(self)
@@ -58,7 +46,7 @@ class PPJSONSerialization: NSObject {
     internal func updateWithJSONData(JSONData: NSData) -> Bool {
         do {
             let JSONObject = try NSJSONSerialization.JSONObjectWithData(JSONData, options: [])
-            update(JSONObject)
+            parse(JSONObject)
             return true
         }
         catch {
@@ -113,48 +101,75 @@ class PPJSONSerialization: NSObject {
 //        }
     }
     
-    // The following code is private
-    
-    func update(JSONObject: AnyObject) -> Void {
-        let mirror = Mirror(reflecting: self)
-        for child in mirror.children {
-            if let childKey = child.label {
-                let childValue = child.value
-                let childMirror = Mirror(reflecting: childValue)
+    private func parse(JSONObject: AnyObject) -> Void {
+        let objectMirror = Mirror(reflecting: self)
+        for objectProperty in objectMirror.children {
+            if let propertyKey = objectProperty.label {
+                let propertyValue = objectProperty.value
+                let propertyMirror = Mirror(reflecting: propertyValue)
+                let propertyType = "\(propertyMirror.subjectType)"
                 if let JSONObject = JSONObject as? [String: AnyObject] {
-                    if "\(childMirror.subjectType)".hasPrefix("Array"),
-                        let JSONArrayObject = JSONObject[childKey] as? [AnyObject] {
-                            if let childValue = childValue as? NSObject {
-                                if childValue.respondsToSelector("updateWithPPJSONObject:generatorType:") {
-                                    var JSONValue: AnyObject?
-                                    let returnValue = childValue.performSelector("updateWithPPJSONObject:generatorType:", withObject: JSONArrayObject, withObject: "\(childMirror.subjectType)")
-                                    let retainValue = returnValue.takeUnretainedValue()
-                                    JSONValue = retainValue
-                                    if JSONValue != nil {
-                                        self.setValue(JSONValue, forKey: childKey)
-                                    }
-                                }
-                            }
+                    //root data must a dictionary
+                    if propertyType.hasPrefix("Array") {
+                        parseArray(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
                     }
-                    else if let JSONValue = PPJSONValueFormatter.value(JSONObject[childKey], eagerType: childMirror.subjectType) {
-                        self.setValue(JSONValue, forKey: childKey)
+                    else if let KVCValue = PPJSONValueFormatter.value(fetchJSONObject(JSONObject, propertyKey: propertyKey),
+                        eagerTypeString: propertyType) {
+                        self.setValue(KVCValue, forKey: propertyKey)
                     }
-                    else if "\(childMirror.subjectType)".hasPrefix("Dictionary") {
-                        if let childValue = childValue as? NSObject {
-                            let JSONDictionaryObject = JSONObject[childKey] as? NSDictionary
-                            if childValue.respondsToSelector("updateWithPPJSONObject:generatorType:") {
-                                var JSONValue: AnyObject?
-                                let returnValue = childValue.performSelector("updateWithPPJSONObject:generatorType:", withObject: JSONDictionaryObject, withObject: "\(childMirror.subjectType)")
-                                JSONValue = returnValue.takeUnretainedValue()
-                                if JSONValue != nil {
-                                    self.setValue(JSONValue, forKey: childKey)
-                                }
-                            }
-                        }
+                    else if propertyType.hasPrefix("Dictionary") {
+                        parseDictionary(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
                     }
+                }
+                else {
+                    assertionFailure("Root must be Dictionary")
                 }
             }
         }
+    }
+    
+    private func parseArray(JSONObject: [String: AnyObject], propertyKey: String, propertyType: String) {
+        if let JSONArrayObject = fetchJSONObject(JSONObject, propertyKey: propertyKey) as? [AnyObject] {
+            let tpl = NSArray()
+            if tpl.respondsToSelector("updateWithPPJSONObject:generatorType:") {
+                let KVCValue = tpl.performSelector("updateWithPPJSONObject:generatorType:",
+                    withObject: JSONArrayObject,
+                    withObject: propertyType).takeUnretainedValue()
+                self.setValue(KVCValue, forKey: propertyKey)
+            }
+        }
+    }
+    
+    private func parseDictionary(JSONObject: [String: AnyObject], propertyKey: String, propertyType: String) {
+        
+        if let JSONDictionaryObject = fetchJSONObject(JSONObject, propertyKey: propertyKey) as? NSDictionary {
+            let tpl = NSDictionary()
+            if tpl.respondsToSelector("updateWithPPJSONObject:generatorType:") {
+                let KVCValue = tpl.performSelector("updateWithPPJSONObject:generatorType:",
+                    withObject: JSONDictionaryObject,
+                    withObject: propertyType).takeUnretainedValue()
+                self.setValue(KVCValue, forKey: propertyKey)
+            }
+        }
+        
+    }
+    
+    private func fetchJSONObject(JSONObject: [String: AnyObject], propertyKey: String) -> AnyObject? {
+        let rMapping = reverseMapping()
+        if rMapping.count > 0 {
+            if let JSONKey = rMapping[propertyKey] {
+                return JSONObject[JSONKey]
+            }
+        }
+        let aMapping = mapping()
+        if aMapping.count > 0 {
+            for (mapJSONKey, mapPropertyKey) in aMapping {
+                if mapPropertyKey == propertyKey, let returnValue = JSONObject[mapJSONKey] {
+                    return returnValue
+                }
+            }
+        }
+        return JSONObject[propertyKey]
     }
     
 }
@@ -180,36 +195,7 @@ class PPJSONValueFormatter {
                 if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(typeString)") {
                     if let NSObjectType = instanceClass as? NSObject.Type {
                         if let instance = NSObjectType.init() as? PPJSONSerialization {
-                            instance.update(originValue)
-                            return instance
-                        }
-                    }
-                }
-            }
-        }
-        return nil
-    }
-    
-    static func value(originValue: AnyObject?, eagerType: Any.Type) -> AnyObject? {
-        if let originValue = originValue {
-            if eagerType == String.self {
-                return stringValue(originValue)
-            }
-            else if eagerType == Int.self {
-                return numberValue(originValue).integerValue
-            }
-            else if eagerType == Double.self {
-                return numberValue(originValue).doubleValue
-            }
-            else if eagerType == Bool.self {
-                return numberValue(originValue).boolValue
-            }
-            else {
-                let typeString = "\(eagerType)".stringByReplacingOccurrencesOfString("Optional", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
-                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(typeString)") {
-                    if let NSObjectType = instanceClass as? NSObject.Type {
-                        if let instance = NSObjectType.init() as? PPJSONSerialization {
-                            instance.update(originValue)
+                            instance.parse(originValue)
                             return instance
                         }
                     }
@@ -288,7 +274,7 @@ extension NSArray {
                     if let NSObjectType = instanceClass as? NSObject.Type {
                         for item in node {
                             if let instance = NSObjectType.init() as? PPJSONSerialization {
-                                instance.update(item)
+                                instance.parse(item)
                             }
                         }
                     }
