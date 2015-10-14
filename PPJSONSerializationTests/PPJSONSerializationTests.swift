@@ -15,14 +15,14 @@ import XCTest
 class SimpleStruct: PPJSONSerialization {
     var simpleStr = ""
     var simpleInt = 0
-    var simpleBool = false
+    var simpleBool:Bool = false
     var simpleDouble = 0.0
-    var simpleArray = [0]
+    var simpleArray = [Int]()
 }
 
 // Define an Array Struct to deal with the array JSON
-class ArrayStruct: PPJSONSerialization {
-    var root = [0]
+class ArrayStruct: PPJSONArraySerialization {
+    var root = [Int]()
 }
 
 // Define a Building Struct to deal with dictionary contains JSON
@@ -39,9 +39,9 @@ class RoomStruct: PPJSONSerialization {
     var roomMates = [""]
     
     // If Struct contains in array, you must override copyWithZone func and return RoomStruct instance.
-    override func copyWithZone(zone: NSZone) -> AnyObject {
-        return RoomStruct()
-    }
+//    override func copyWithZone(zone: NSZone) -> AnyObject {
+//        return RoomStruct()
+//    }
 }
 
 // Define a Map Struct and override mapping() return, you can map the JSON key to Custom Property key
@@ -64,14 +64,15 @@ class PPJSONSerializationTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
     func testErrorJSON() {
         let errorJSON = "I have a dream!"
         XCTAssert(SimpleStruct(JSONString: errorJSON) == nil, "Pass")
     }
     
     func testSimpleParser() {
-        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4]}"
+        
+        let simpleJSON = "{\"simpleStr\":\"String Value\", \"simpleInt\":1024, \"simpleBool\": true, \"simpleDouble\": 1024.00, \"simpleArray\": [1,0,2,4], \"doubleArray\": [[1,0,2,4]], \"doubleDoubleArray\": [[1,0,2,4]], \"doubleStringArray\": [[\"1\",\"0\",\"2\",\"4\"]], \"simpleRoom\":{\"test\":{\"roomNumber\":632, \"roomSize\":6.6}}}"
         if let simpleObject = SimpleStruct(JSONString: simpleJSON) {
             XCTAssert(simpleObject.simpleStr == "String Value", "Pass")
             XCTAssert(simpleObject.simpleInt == 1024, "Pass")
@@ -86,7 +87,7 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(false, "JSON Parser Failable")
         }
     }
-    
+
     func testTypeTransfer() {
         let typeErrorJSON = "{\"simpleStr\": 1024, \"simpleInt\": \"1024\", \"simpleBool\": null, \"simpleDouble\": \"Bool Value\", \"simpleArray\": {}}"
         if let simpleObject = SimpleStruct(JSONString: typeErrorJSON) {
@@ -222,7 +223,7 @@ class PPJSONSerializationTests: XCTestCase {
         roomObjectB.roomMates = ["Sun"]
         buildingObject.buildRooms.append(roomObjectB)
         let JSONString = buildingObject.JSONString()
-        XCTAssert(JSONString == "{\"buildNumber\":\"B\",\"managementRoom\":{\"roomSize\":10.14,\"roomNumber\":101,\"roomMates\":[\"Pony\",\"Chunge\"]},\"buildRooms\":[{\"roomSize\":6.6,\"roomNumber\":632,\"roomMates\":[\"Lin\",\"Zeng\"]},{\"roomSize\":7.6,\"roomNumber\":633,\"roomMates\":[\"Sun\"]}]}", "Pass")
+        XCTAssert(JSONString == "{\"buildNumber\":\"B\",\"managementRoom\":{\"roomSize\":10.14,\"roomMates\":[\"Pony\",\"Chunge\"],\"roomNumber\":101},\"buildRooms\":[{\"roomSize\":6.6,\"roomMates\":[\"Lin\",\"Zeng\"],\"roomNumber\":632},{\"roomSize\":7.6,\"roomMates\":[\"Sun\"],\"roomNumber\":633}]}", "Pass")
     }
     
 }

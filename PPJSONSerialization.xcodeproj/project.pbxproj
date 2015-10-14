@@ -12,6 +12,7 @@
 		6310209C1B429C7200A97115 /* PPJSONSerializationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6310209B1B429C7200A97115 /* PPJSONSerializationTests.swift */; };
 		631020A61B429C9800A97115 /* PPJSONSerialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631020A51B429C9800A97115 /* PPJSONSerialization.swift */; };
 		631020A71B429CF500A97115 /* PPJSONSerialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631020A51B429C9800A97115 /* PPJSONSerialization.swift */; };
+		632DA5CF1BCE1EC5002C84F9 /* PPJSONSerializationRecodedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632DA5CE1BCE1EC5002C84F9 /* PPJSONSerializationRecodedTests.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +33,7 @@
 		6310209A1B429C7200A97115 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6310209B1B429C7200A97115 /* PPJSONSerializationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PPJSONSerializationTests.swift; sourceTree = "<group>"; };
 		631020A51B429C9800A97115 /* PPJSONSerialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PPJSONSerialization.swift; sourceTree = "<group>"; };
+		632DA5CE1BCE1EC5002C84F9 /* PPJSONSerializationRecodedTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PPJSONSerializationRecodedTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				6310209B1B429C7200A97115 /* PPJSONSerializationTests.swift */,
+				632DA5CE1BCE1EC5002C84F9 /* PPJSONSerializationRecodedTests.swift */,
 				631020991B429C7200A97115 /* Supporting Files */,
 			);
 			path = PPJSONSerializationTests;
@@ -225,6 +228,7 @@
 			files = (
 				631020A71B429CF500A97115 /* PPJSONSerialization.swift in Sources */,
 				6310209C1B429C7200A97115 /* PPJSONSerializationTests.swift in Sources */,
+				632DA5CF1BCE1EC5002C84F9 /* PPJSONSerializationRecodedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
