@@ -111,6 +111,7 @@ class PPJSONSerialization: NSObject {
                 if let JSONObject = JSONObject as? [String: AnyObject] {
                     //root data must a dictionary
                     if propertyType.hasPrefix("Array") {
+                        self.setValue(NSArray(), forKey: propertyKey)
                         parseArray(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
                     }
                     else if let KVCValue = PPJSONValueFormatter.value(fetchJSONObject(JSONObject, propertyKey: propertyKey),
@@ -118,7 +119,14 @@ class PPJSONSerialization: NSObject {
                         self.setValue(KVCValue, forKey: propertyKey)
                     }
                     else if propertyType.hasPrefix("Dictionary") {
+                        self.setValue(NSDictionary(), forKey: propertyKey)
                         parseDictionary(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
+                    }
+                }
+                else if self.isKindOfClass(PPJSONArraySerialization), let JSONObject = JSONObject as? [AnyObject] {
+                    self.setValue(NSArray(), forKey: "root")
+                    if propertyKey == "root" {
+                        parseArray(JSONObject, propertyKey: "root", propertyType: propertyType)
                     }
                 }
                 else {
@@ -137,6 +145,17 @@ class PPJSONSerialization: NSObject {
                     withObject: propertyType).takeUnretainedValue()
                 self.setValue(KVCValue, forKey: propertyKey)
             }
+        }
+    }
+    
+    private func parseArray(JSONObject: [AnyObject], propertyKey: String, propertyType: String) {
+        let JSONArrayObject = JSONObject
+        let tpl = NSArray()
+        if tpl.respondsToSelector("updateWithPPJSONObject:generatorType:") {
+            let KVCValue = tpl.performSelector("updateWithPPJSONObject:generatorType:",
+                withObject: JSONArrayObject,
+                withObject: propertyType).takeUnretainedValue()
+            self.setValue(KVCValue, forKey: propertyKey)
         }
     }
     
@@ -171,6 +190,10 @@ class PPJSONSerialization: NSObject {
         }
         return JSONObject[propertyKey]
     }
+    
+}
+
+class PPJSONArraySerialization: PPJSONSerialization {
     
 }
 

@@ -21,8 +21,8 @@ class SimpleStruct: PPJSONSerialization {
 }
 
 // Define an Array Struct to deal with the array JSON
-class ArrayStruct: PPJSONSerialization {
-    var root = [0]
+class ArrayStruct: PPJSONArraySerialization {
+    var root = [Int]()
 }
 
 // Define a Building Struct to deal with dictionary contains JSON
@@ -103,17 +103,17 @@ class PPJSONSerializationTests: XCTestCase {
     }
     
     func testArrayJSON() {
-//        let arrayJSON = "[1,0,2,4]"
-//        if let arrayObject = ArrayStruct(JSONString: arrayJSON) {
-//            XCTAssert(arrayObject.root.count == 4, "Pass")
-//            XCTAssert(arrayObject.root[0] == 1, "Pass")
-//            XCTAssert(arrayObject.root[1] == 0, "Pass")
-//            XCTAssert(arrayObject.root[2] == 2, "Pass")
-//            XCTAssert(arrayObject.root[3] == 4, "Pass")
-//        }
-//        else {
-//            XCTAssert(false, "JSON Parser Failable")
-//        }
+        let arrayJSON = "[1,0,2,4]"
+        if let arrayObject = ArrayStruct(JSONString: arrayJSON) {
+            XCTAssert(arrayObject.root.count == 4, "Pass")
+            XCTAssert(arrayObject.root[0] == 1, "Pass")
+            XCTAssert(arrayObject.root[1] == 0, "Pass")
+            XCTAssert(arrayObject.root[2] == 2, "Pass")
+            XCTAssert(arrayObject.root[3] == 4, "Pass")
+        }
+        else {
+            XCTAssert(false, "JSON Parser Failable")
+        }
     }
     
     func testDictionaryContainsJSON() {
@@ -172,13 +172,13 @@ class PPJSONSerializationTests: XCTestCase {
             XCTAssert(simpleObject.simpleArray.count == 0, "Pass")
         }
         if let arrayObject = ArrayStruct(JSONString: simpleJSON) {
-//            XCTAssert(arrayObject.root.count == 0, "Pass")
+            XCTAssert(arrayObject.root.count == 0, "Pass")
         }
         if let buildingObject = BuildingStruct(JSONString: simpleJSON) {
-//            XCTAssert(buildingObject.buildRooms.count == 0, "Pass")
+            XCTAssert(buildingObject.buildRooms.count == 0, "Pass")
         }
         if let buildingObject = BuildingStruct(JSONString: "{\"buildRooms\":[{}]}") {
-//            XCTAssert(buildingObject.buildRooms[0].roomMates.count == 0, "Pass")
+            XCTAssert(buildingObject.buildRooms[0].roomMates.count == 0, "Pass")
         }
     }
     
