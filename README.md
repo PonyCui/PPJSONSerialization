@@ -254,7 +254,7 @@ You use serialize to serialize PPJSONSerialization classes to JSON String or JSO
 
 ```swift
 class Artist: PPJSONSerialization {
-    var name: String = "" // ~~~Note that, optional value is not serialize to string always!~~~
+    var name: String = "" // Optional value is also supported.
     var height: Double = 0.0
 }
 
