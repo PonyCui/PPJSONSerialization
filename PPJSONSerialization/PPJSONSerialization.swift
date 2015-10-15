@@ -8,6 +8,11 @@
 
 import Foundation
 
+protocol PPCoding {
+    mutating func encodeAsPPObject() -> AnyObject?
+    mutating func decodeWithPPObject(PPObject: AnyObject) -> AnyObject?
+}
+
 class PPJSONSerialization: NSObject {
     
     /// Use mapping maps JSONKey to PropertyKey, [JSONKey: PropertyKey], Priorify Low
@@ -312,6 +317,9 @@ class PPJSONValueFormatter {
             else if trimedEagerTypeString == "NSNumber" {
                 return numberValue(originValue)
             }
+            else if let codeingInstance = codingValue(originValue, className: trimedEagerTypeString) {
+                return codeingInstance
+            }
             else {
                 if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(trimedEagerTypeString)") {
                     if let NSObjectType = instanceClass as? NSObject.Type {
@@ -320,6 +328,20 @@ class PPJSONValueFormatter {
                             return instance
                         }
                     }
+                }
+            }
+        }
+        return nil
+    }
+    
+    static func codingValue(originValue: AnyObject, className: String) -> AnyObject? {
+        if let classType = NSClassFromString(className) as? NSObject.Type {
+            if var classInstance = classType.init() as? PPCoding {
+                if let returnValue = classInstance.decodeWithPPObject(originValue) {
+                    return returnValue
+                }
+                else {
+                    return classInstance as? AnyObject
                 }
             }
         }

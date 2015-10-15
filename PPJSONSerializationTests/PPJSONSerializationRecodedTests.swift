@@ -30,6 +30,25 @@ class DictionaryGeneric: PPJSONArraySerialization {
     var dict = [String: String]()
 }
 
+class CodeingStruct: PPJSONSerialization {
+    var codeingDate: NSDate = NSDate()
+}
+
+extension NSDate: PPCoding {
+    
+    func encodeAsPPObject() -> AnyObject? {
+        return timeIntervalSince1970
+    }
+    
+    func decodeWithPPObject(PPObject: AnyObject) -> AnyObject? {
+        if let timestamp = PPObject as? NSTimeInterval {
+            return NSDate(timeIntervalSince1970: timestamp)
+        }
+        return nil
+    }
+    
+}
+
 class PPJSONSerializationRecodedTests: XCTestCase {
     
     let nullJSON = ""
@@ -53,6 +72,8 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     let threeDimensionArrayJSON = "{\"threeDimension\": [[[1,0,2,4]]]}"
     
     let dictionaryGenericJSON = "{\"dict\":{\"hello\": \"world\", \"1\":123123}}"
+    
+    let codingDateJSON = "{\"codeingDate\":1444885037}"
     
     func testOptional() {
         XCTAssert(OptionalTest(JSONString: nullJSON) == nil, "Pass")
@@ -136,6 +157,12 @@ class PPJSONSerializationRecodedTests: XCTestCase {
         }
         else {
             XCTAssert(false, "Failed")
+        }
+    }
+    
+    func testCodeing() {
+        if let test = CodeingStruct(JSONString: codingDateJSON) {
+            XCTAssert(test.codeingDate.description == "2015-10-15 04:57:17 +0000", "Pass")
         }
     }
     
