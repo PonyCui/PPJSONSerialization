@@ -217,6 +217,7 @@ if let test = CodeingStruct(JSONString: codingDateJSON) {
 ```
 
 * PPCoding also support serialize operation.
+* Optional value is not available for serialize.
 
 #### Array JSON
 
@@ -305,6 +306,32 @@ Prints: {"name":"Pony Cui","height":164}
 */
 
 ```
+
+#### Namespace support
+
+You may define a class wrapping classes in Swift. That's a good practice.
+
+Here is an example, we put all PPJSONSerialization classes in DataModel namespace
+
+```swift
+class DataModel { // Struct & Enum also available
+
+    class Artist: PPJSONSerialization {
+        var name: String?
+        var mainSong = Song() // Using namespace, you must init an instance. Optional type is not availabel.
+        var songs = [Song()] // Using namespace, you must init an instance in array!
+        var mapSong = [".": Song()] // Using namespace, you must init an instance in dictionary with any key!
+    }
+
+    class Song: PPJSONSerialization {
+        var name: String?
+        var duration: Double = 0.0
+    }
+
+}
+```
+
+* Multiple level nampspace is available.
 
 PPJSONSerialization is still in development, welcome to improve the project together.
 
