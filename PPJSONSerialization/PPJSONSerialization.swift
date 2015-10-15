@@ -109,7 +109,7 @@ class PPJSONSerialization: NSObject {
         let objectMirror = Mirror(reflecting: self)
         for objectProperty in objectMirror.children {
             if let propertyKey = objectProperty.label {
-                if !hasGetter(propertyKey) {
+                if !hasGetter(propertyKey) || !hasSetter(propertyKey) {
                     continue
                 }
                 let propertyValue = objectProperty.value
@@ -177,7 +177,18 @@ class PPJSONSerialization: NSObject {
     }
     
     private func hasSetter(propertyKey: String) -> Bool {
-        return respondsToSelector(Selector("set\(propertyKey.capitalizedString):"))
+        return respondsToSelector(Selector("set\(firstLetterCapitalizedString(propertyKey)):"))
+    }
+    
+    private func firstLetterCapitalizedString(string: String) -> String {
+        if string.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 1 {
+            let firstLetter = string.substringToIndex(string.startIndex.advancedBy(1))
+            let otherLetter = string.substringFromIndex(string.startIndex.advancedBy(1))
+            return "\(firstLetter.uppercaseString)\(otherLetter)"
+        }
+        else {
+            return string
+        }
     }
     
     private func hasGetter(propertyKey: String) -> Bool {
