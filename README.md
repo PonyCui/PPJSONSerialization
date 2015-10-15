@@ -58,13 +58,13 @@ if let artistData = Artist(JSONString: mockString) {
 
 Type transfer now applys on string, double, int, bool
 
-#### Optional value
+#### Optional value (Not stable)
 
 The best feature in Swift is optional, PPJSONSerialization also support it.
 
 ```swift
 class Artist: PPJSONSerialization {
-  var name: String? // We define it as a optional value
+  var name: String? // We define it as an optional value
   var height: Double = 0.0
 }
 
