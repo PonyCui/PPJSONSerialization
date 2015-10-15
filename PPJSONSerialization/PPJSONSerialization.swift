@@ -245,6 +245,11 @@ class PPJSONSerialization: NSObject {
                             output.setValue(nextOutput, forKey: JSONKey)
                         }
                     }
+                    else if let propertyValue = propertyValue as? PPCoding {
+                        if let returnValue = propertyValue.encodeAsPPObject() {
+                            output.setValue(returnValue, forKey: JSONKey)
+                        }
+                    }
                 }
                 else if let optionalValue = PPJSONValueFormatter.optionalValue(objectProperty.value) {
                     output.setValue(optionalValue, forKey: JSONKey)

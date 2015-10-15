@@ -182,6 +182,42 @@ Optional("Max"), height:188.0
 */
 ```
 
+#### PPCoding
+
+If you wonder control a type transferring job. Follow PPCoding protocol.
+
+For example, we eager to transfer an timestamp(Int) to NSDate, that's a common requirement.
+
+```swift
+class CodeingStruct: PPJSONSerialization {
+    var codeingDate: NSDate = NSDate() // Define a property as common, optional or non-optional available either.
+}
+
+extension NSDate: PPCoding {
+
+    func encodeAsPPObject() -> AnyObject? {
+        return timeIntervalSince1970
+    }
+
+    func decodeWithPPObject(PPObject: AnyObject) -> AnyObject? {
+        if let timestamp = PPObject as? NSTimeInterval {
+            return NSDate(timeIntervalSince1970: timestamp) // And now we extent NSDate
+        }
+        return nil
+    }
+
+}
+
+let codingDateJSON = "{\"codeingDate\":1444885037}"
+
+if let test = CodeingStruct(JSONString: codingDateJSON) {
+    XCTAssert(test.codeingDate.description == "2015-10-15 04:57:17 +0000", "Pass")
+}
+
+```
+
+* PPCoding also support serialize operation.
+
 #### Array JSON
 
 If the JSON is an array base struct. You should subclass ```PPJSONArraySerialization```, and define a property ```root``` with generic type.

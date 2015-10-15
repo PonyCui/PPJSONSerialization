@@ -31,7 +31,10 @@ class DictionaryGeneric: PPJSONArraySerialization {
 }
 
 class CodeingStruct: PPJSONSerialization {
+    
     var codeingDate: NSDate = NSDate()
+    var optionalDate: NSDate? = nil
+    
 }
 
 extension NSDate: PPCoding {
@@ -73,7 +76,7 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     
     let dictionaryGenericJSON = "{\"dict\":{\"hello\": \"world\", \"1\":123123}}"
     
-    let codingDateJSON = "{\"codeingDate\":1444885037}"
+    let codingDateJSON = "{\"codeingDate\":1444885037, \"optionalDate\":1444885037}"
     
     func testOptional() {
         XCTAssert(OptionalTest(JSONString: nullJSON) == nil, "Pass")
@@ -163,6 +166,9 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     func testCodeing() {
         if let test = CodeingStruct(JSONString: codingDateJSON) {
             XCTAssert(test.codeingDate.description == "2015-10-15 04:57:17 +0000", "Pass")
+            if let date = test.optionalDate {
+                XCTAssert(date.description == "2015-10-15 04:57:17 +0000", "Pass")
+            }
         }
     }
     
