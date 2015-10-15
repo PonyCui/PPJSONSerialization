@@ -26,6 +26,10 @@ class MultipleDimensionArray: PPJSONSerialization {
     var threeDimension = [[[Int]]]()
 }
 
+class DictionaryGeneric: PPJSONArraySerialization {
+    var dict = [String: String]()
+}
+
 class PPJSONSerializationRecodedTests: XCTestCase {
     
     let nullJSON = ""
@@ -48,32 +52,55 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     
     let threeDimensionArrayJSON = "{\"threeDimension\": [[[1,0,2,4]]]}"
     
+    let dictionaryGenericJSON = "{\"dict\":{\"hello\": \"world\", \"1\":123123}}"
+    
     func testOptional() {
         XCTAssert(OptionalTest(JSONString: nullJSON) == nil, "Pass")
         if let test = OptionalTest(JSONString: nullDictionaryJSON) {
             XCTAssert(test.optionalString == nil, "Pass")
             XCTAssert(test.optionalNumber == nil, "Pass")
         }
+        else {
+            XCTAssert(false, "Failed")
+        }
         if let test = OptionalTest(JSONString: optionalStringJSON) {
             XCTAssert(test.optionalString == "Hello, World", "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
         if let test = OptionalTest(JSONString: optionalIntJSON) {
             XCTAssert(test.optionalInt == 123, "Pass")
         }
+        else {
+            XCTAssert(false, "Failed")
+        }
         if let test = OptionalTest(JSONString: optionalDoubleJSON) {
             XCTAssert(test.optionalDouble == 123.0, "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
         if let test = OptionalTest(JSONString: optionalBoolJSON) {
             XCTAssert(test.optionalBool == true, "Pass")
         }
+        else {
+            XCTAssert(false, "Failed")
+        }
         if let test = OptionalTest(JSONString: optionalNumberJSON) {
             XCTAssert(test.optionalNumber?.doubleValue == 123.0, "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
     }
     
     func testMapping() {
         if let test = OptionalTest(JSONString: intJSON) {
             XCTAssert(test.optionalInt == 123, "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
     }
     
@@ -88,11 +115,27 @@ class PPJSONSerializationRecodedTests: XCTestCase {
             XCTAssert(test.twoDimension[1][2] == 2, "Pass")
             XCTAssert(test.twoDimension[1][3] == 4, "Pass")
         }
+        else {
+            XCTAssert(false, "Failed")
+        }
         if let test = MultipleDimensionArray(JSONString: threeDimensionArrayJSON) {
             XCTAssert(test.threeDimension[0][0][0] == 1, "Pass")
             XCTAssert(test.threeDimension[0][0][1] == 0, "Pass")
             XCTAssert(test.threeDimension[0][0][2] == 2, "Pass")
             XCTAssert(test.threeDimension[0][0][3] == 4, "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
+        }
+    }
+    
+    func testDictionaryGeneric() {
+        if let test = DictionaryGeneric(JSONString: dictionaryGenericJSON) {
+            XCTAssert(test.dict["hello"] == "world", "Pass")
+            XCTAssert(test.dict["1"] == "123123", "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
     }
     

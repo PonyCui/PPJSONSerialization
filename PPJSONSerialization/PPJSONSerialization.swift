@@ -295,7 +295,7 @@ class PPJSONValueFormatter {
     }
     
     static func value(originValue: AnyObject?, eagerTypeString: String) -> AnyObject? {
-        let trimedEagerTypeString = eagerTypeString.stringByReplacingOccurrencesOfString("Optional", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
+        let trimedEagerTypeString = eagerTypeString.stringByReplacingOccurrencesOfString("Optional|<|>", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
         if let originValue = originValue {
             if trimedEagerTypeString == "String" {
                 return stringValue(originValue)
@@ -390,7 +390,13 @@ extension NSArray {
                 }
             }
             else {
-                let nodeClass = generatorType.stringByReplacingOccurrencesOfString("Array", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "")
+                var nodeClass = generatorType
+                let maxRetry = maxLevel + 1
+                var currentCount = 0
+                repeat {
+                    nodeClass = nodeClass.stringByReplacingOccurrencesOfString("Array<([a-zA-Z]*?)>", withString: "$1", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
+                    currentCount++
+                } while (nodeClass.containsString("Array") && currentCount < maxRetry)
                 if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(nodeClass)") {
                     if let NSObjectType = instanceClass as? NSObject.Type {
                         for item in node {
@@ -432,7 +438,7 @@ extension NSDictionary {
         if PPJSONObject == nil {
             return NSDictionary()
         }
-        let pureType = generatorType.stringByReplacingOccurrencesOfString("Dictionary", withString: "").stringByReplacingOccurrencesOfString("<", withString: "").stringByReplacingOccurrencesOfString(">", withString: "").stringByReplacingOccurrencesOfString(" ", withString: "")
+        let pureType = generatorType.stringByReplacingOccurrencesOfString("Dictionary|<|>| ", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
         if let keyType = pureType.componentsSeparatedByString(",").first,
             let valueType = pureType.componentsSeparatedByString(",").last {
                 let output = NSMutableDictionary()
