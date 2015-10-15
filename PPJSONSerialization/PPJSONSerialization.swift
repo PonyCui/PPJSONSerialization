@@ -333,6 +333,13 @@ extension PPJSONSerialization {
             let valueType = subjectType.stringByReplacingOccurrencesOfString("Dictionary|<|>|\\s", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
             let components = valueType.componentsSeparatedByString(",")
             if components.count == 2 {
+                if let sampleDictionary = child.value as? NSDictionary {
+                    if sampleDictionary.count > 0 {
+                        if let sampleObject = sampleDictionary.allValues.first as? PPJSONSerialization {
+                            return ("Dictionary", components[0], NSStringFromClass(sampleObject.classForCoder))
+                        }
+                    }
+                }
                 return ("Dictionary", components[0], components[1])
             }
         }

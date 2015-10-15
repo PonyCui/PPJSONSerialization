@@ -43,6 +43,7 @@ class DataModel {
         var name: String?
         var mainSong = Song()
         var songs = [Song()]
+        var mapSong = [".": Song()]
     }
     
     class Song: PPJSONSerialization {
@@ -189,7 +190,7 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     
     func testChainning() {
         
-        let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}]}"
+        let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}], \"mapSong\": {\"sampleKey\": {\"name\":\"Love Song\", \"duration\": 168.0}}}"
         
         if let test = DataModel.Artist(JSONString: JSONString) {
             XCTAssert(test.name! == "Pony Cui", "Pass")
@@ -197,6 +198,8 @@ class PPJSONSerializationRecodedTests: XCTestCase {
             XCTAssert(test.mainSong.duration == 168.0, "Pass")
             XCTAssert(test.songs[0].name == "Love Song", "Pass")
             XCTAssert(test.songs[0].duration == 168.0, "Pass")
+            XCTAssert(test.mapSong["sampleKey"]?.name == "Love Song", "Pass")
+            XCTAssert(test.mapSong["sampleKey"]?.duration == 168.0, "Pass")
         }
         else {
             XCTAssert(false, "Failed")
