@@ -133,6 +133,34 @@ extension PPJSONSerialization {
     private func parse(JSONObject: AnyObject) -> Void {
         let objectMirror = Mirror(reflecting: self)
         for objectProperty in objectMirror.children {
+            
+            if let pKey = objectProperty.label {
+                if !hasGetter(pKey) || !hasSetter(pKey) {
+                    continue
+                }
+                let objectType = typeOfChild(objectProperty)
+                if let JSONObject = JSONObject as? [String: AnyObject] {
+                    if objectType.0.hasPrefix("Array"), let valueType = objectType.containerValueType {
+                        let level = PPJSONValueFormatter.numberValue(objectType.0.stringByReplacingOccurrencesOfString("Array.", withString: "")).integerValue
+                        if let originValue = fetchJSONObject(JSONObject, propertyKey: pKey) {
+                            self.setValue(PPJSONValueFormatter.arrayValue(originValue, maxLevel: level, valueType: valueType), forKey: pKey)
+                        }
+                        else {
+                            self.setValue(NSArray(), forKey: pKey)
+                        }
+                    }
+                }
+                else if self.isKindOfClass(PPJSONArraySerialization), let JSONObject = JSONObject as? [AnyObject] {
+                    if objectType.0.hasPrefix("Array"), let valueType = objectType.containerValueType {
+                        let level = PPJSONValueFormatter.numberValue(objectType.0.stringByReplacingOccurrencesOfString("Array.", withString: "")).integerValue
+                        self.setValue(PPJSONValueFormatter.arrayValue(JSONObject, maxLevel: level, valueType: valueType), forKey: pKey)
+                    }
+                    else {
+                        self.setValue(NSArray(), forKey: pKey)
+                    }
+                }
+            }
+            
             if let propertyKey = objectProperty.label {
                 if !hasGetter(propertyKey) || !hasSetter(propertyKey) {
                     continue
@@ -142,19 +170,7 @@ extension PPJSONSerialization {
                 let propertyType = "\(propertyMirror.subjectType)"
                 if let JSONObject = JSONObject as? [String: AnyObject] {
                     if propertyType.hasPrefix("Array") {
-                        var pType = propertyType
-                        if let arrayValues = self.valueForKey(propertyKey) {
-                            if let firstObject = arrayValues.firstObject {
-                                if let firstObject = firstObject {
-                                    if let fullType = firstObject.classForKeyedArchiver as? PPJSONSerialization.Type {
-                                        let fullTypeString = NSStringFromClass(fullType)
-                                        pType = fullTypeString
-                                    }
-                                }
-                            }
-                        }
-                        self.setValue(NSArray(), forKey: propertyKey)
-                        parseArray(JSONObject, propertyKey: propertyKey, propertyType: pType)
+                        
                     }
                     else if let propertyValue = propertyValue as? PPJSONSerialization {
                         if let fullType = propertyValue.classForKeyedArchiver {
@@ -172,12 +188,6 @@ extension PPJSONSerialization {
                     else if propertyType.hasPrefix("Dictionary") {
                         self.setValue(NSDictionary(), forKey: propertyKey)
                         parseDictionary(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
-                    }
-                }
-                else if self.isKindOfClass(PPJSONArraySerialization), let JSONObject = JSONObject as? [AnyObject] {
-                    self.setValue(NSArray(), forKey: "root")
-                    if propertyKey == "root" {
-                        parseArray(JSONObject, propertyKey: "root", propertyType: propertyType)
                     }
                 }
             }
@@ -330,6 +340,62 @@ extension PPJSONSerialization {
         }
     }
     
+    private func typeOfChild(child: Mirror.Child) -> (subjectType: String, containerKeyType: String?, containerValueType: String?) {
+        
+        let mirror = Mirror(reflecting: child.value)
+        if mirror.displayStyle == nil {
+            return ("\(mirror.subjectType)", nil, nil)
+        }
+        else if mirror.displayStyle == Mirror.DisplayStyle.Optional {
+            let subjectType = "\(mirror.subjectType)"
+            let trimedType = subjectType.stringByReplacingOccurrencesOfString("Optional<(.*?)>",
+                withString: "$1",
+                options: NSStringCompareOptions.RegularExpressionSearch,
+                range: nil)
+            return ("\(trimedType)", nil, nil)
+        }
+        else if mirror.displayStyle == Mirror.DisplayStyle.Collection {
+            //Array
+            let subjectType = "\(mirror.subjectType)"
+            let levelCount = subjectType.componentsSeparatedByString("Array").count - 1
+            if let sampleArray = child.value as? NSArray {
+                if sampleArray.count > 0 {
+                    var sampleObject: AnyObject = sampleArray
+                    repeat {
+                        if let firstObject = sampleObject.firstObject {
+                            if let firstObject = firstObject {
+                                sampleObject = firstObject
+                                continue
+                            }
+                        }
+                        break
+                    } while (sampleObject.isKindOfClass(NSArray))
+                    
+                    if let sampleObject = sampleObject as? PPJSONSerialization {
+                        return ("Array.\(levelCount)", nil, NSStringFromClass(sampleObject.classForCoder))
+                    }
+                }
+            }
+            let valueType = subjectType.stringByReplacingOccurrencesOfString("Array|<|>", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
+            return ("Array.\(levelCount)", nil, valueType)
+        }
+        else if mirror.displayStyle == Mirror.DisplayStyle.Dictionary {
+            //Dictionary
+            let subjectType = "\(mirror.subjectType)"
+            let valueType = subjectType.stringByReplacingOccurrencesOfString("Dictionary|<|>|\\s", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
+            let components = valueType.componentsSeparatedByString(",")
+            if components.count == 2 {
+                return ("Dictionary", components[0], components[1])
+            }
+        }
+        else if mirror.displayStyle == Mirror.DisplayStyle.Class {
+            if let subjectType = mirror.subjectType as? PPJSONSerialization.Type {
+                return (NSStringFromClass(subjectType), nil, nil)
+            }
+        }
+        return ("", nil, nil)
+    }
+    
 }
 
 class PPJSONValueFormatter {
@@ -420,55 +486,42 @@ class PPJSONValueFormatter {
         return ""
     }
     
+    static func arrayValue(originValue: AnyObject, maxLevel: Int, valueType: String) -> NSArray {
+        if let originValue = originValue as? [AnyObject] {
+            return NSArray().nextLevel(originValue, currentLevel: 1, maxLevel: maxLevel, valueType: valueType)
+        }
+        return NSArray()
+    }
+    
 }
 
 extension NSArray {
     
-    func updateWithPPJSONObject(PPJSONObject: AnyObject!, generatorType: String!) -> AnyObject! {
-        if PPJSONObject == nil {
-            return []
-        }
-        let maxLevel = generatorType.componentsSeparatedByString("Array").count - 1
-        if let JSONObject = PPJSONObject as? [AnyObject] {
-            return nextLevel(JSONObject, currentLevel: 1, maxLevel: maxLevel, generatorType: generatorType)
-        }
-        else {
-            return []
-        }
-    }
-    
-    func nextLevel(node: [AnyObject], currentLevel: Int, maxLevel: Int, generatorType: String!) -> [AnyObject] {
+    func nextLevel(node: [AnyObject], currentLevel: Int, maxLevel: Int, valueType: String!) -> [AnyObject] {
         var items = [AnyObject]()
         if currentLevel < maxLevel {
             for subNode in node {
                 if let subNode = subNode as? [AnyObject] {
-                    let item = nextLevel(subNode, currentLevel: currentLevel+1, maxLevel: maxLevel, generatorType: generatorType)
+                    let item = nextLevel(subNode, currentLevel: currentLevel+1, maxLevel: maxLevel, valueType: valueType)
                     items.append(item)
                 }
             }
             return items
         }
         else {
-            if generatorType.containsString("Int") || generatorType.containsString("Double") || generatorType.containsString("Bool") {
+            if valueType.containsString("Int") || valueType.containsString("Double") || valueType.containsString("Bool") {
                 for item in node {
                     items.append(PPJSONValueFormatter.numberValue(item))
                 }
             }
-            else if generatorType.containsString("String") {
+            else if valueType.containsString("String") {
                 for item in node {
                     items.append(PPJSONValueFormatter.stringValue(item))
                 }
             }
             else {
-                var nodeClass = generatorType
-                let maxRetry = maxLevel + 1
-                var currentCount = 0
-                repeat {
-                    nodeClass = nodeClass.stringByReplacingOccurrencesOfString("Array<([a-zA-Z]*?)>", withString: "$1", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
-                    currentCount++
-                } while (nodeClass.containsString("Array") && currentCount < maxRetry)
                 for item in node {
-                    if let instance = PPJSONValueFormatter.value(item, eagerTypeString: nodeClass) {
+                    if let instance = PPJSONValueFormatter.value(item, eagerTypeString: valueType) {
                         items.append(instance)
                     }
                 }
