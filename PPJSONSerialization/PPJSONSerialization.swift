@@ -230,7 +230,7 @@ class PPJSONSerialization: NSObject {
                         }
                     }
                 }
-                else if let optionalValue = PPJSONValueFormatter.optionalStringValue(objectProperty.value) {
+                else if let optionalValue = PPJSONValueFormatter.optionalValue(objectProperty.value) {
                     output.setValue(optionalValue, forKey: JSONKey)
                 }
             }
@@ -271,13 +271,15 @@ class PPJSONArraySerialization: PPJSONSerialization {
 
 class PPJSONValueFormatter {
     
-    static func optionalStringValue(originValue: Any) -> String? {
-        let description = "\(originValue)".stringByReplacingOccurrencesOfString("Optional(\"", withString: "").stringByReplacingOccurrencesOfString("\")", withString: "")
-        if description.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0 {
-            return description
+    static func optionalValue(originValue: Any) -> AnyObject? {
+        var stringValue = "\(originValue)"
+        stringValue = stringValue.stringByReplacingOccurrencesOfString("Optional\\((.*?)\\)", withString: "$1", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
+        if stringValue.hasPrefix("\"") && stringValue.hasSuffix("\"") {
+            stringValue = stringValue.stringByReplacingOccurrencesOfString("\"(.*?)\"", withString: "$1", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
+            return self.stringValue(stringValue)
         }
         else {
-            return nil
+            return self.numberValue(stringValue)
         }
     }
     
