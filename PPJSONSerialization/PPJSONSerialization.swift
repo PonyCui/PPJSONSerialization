@@ -110,6 +110,26 @@ class PPJSONSerialization: NSObject {
         }
     }
     
+    internal func serialize() -> AnyObject? {
+        return _serialize(nil)
+    }
+    
+}
+
+class PPJSONArraySerialization: PPJSONSerialization {
+    
+    internal override func serialize() -> AnyObject? {
+        if hasGetter("root") {
+            return _serialize(valueForKey("root"))
+        }
+        return nil
+    }
+    
+}
+
+// MARK: - Parser
+extension PPJSONSerialization {
+    
     private func parse(JSONObject: AnyObject) -> Void {
         let objectMirror = Mirror(reflecting: self)
         for objectProperty in objectMirror.children {
@@ -147,7 +167,7 @@ class PPJSONSerialization: NSObject {
                     }
                     else if let KVCValue = PPJSONValueFormatter.value(fetchJSONObject(JSONObject, propertyKey: propertyKey),
                         eagerTypeString: propertyType) {
-                        self.setValue(KVCValue, forKey: propertyKey)
+                            self.setValue(KVCValue, forKey: propertyKey)
                     }
                     else if propertyType.hasPrefix("Dictionary") {
                         self.setValue(NSDictionary(), forKey: propertyKey)
@@ -201,25 +221,6 @@ class PPJSONSerialization: NSObject {
         
     }
     
-    private func hasSetter(propertyKey: String) -> Bool {
-        return respondsToSelector(Selector("set\(firstLetterCapitalizedString(propertyKey)):"))
-    }
-    
-    private func firstLetterCapitalizedString(string: String) -> String {
-        if string.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 1 {
-            let firstLetter = string.substringToIndex(string.startIndex.advancedBy(1))
-            let otherLetter = string.substringFromIndex(string.startIndex.advancedBy(1))
-            return "\(firstLetter.uppercaseString)\(otherLetter)"
-        }
-        else {
-            return string
-        }
-    }
-    
-    private func hasGetter(propertyKey: String) -> Bool {
-        return respondsToSelector(Selector("\(propertyKey)"))
-    }
-    
     private func fetchJSONObject(JSONObject: [String: AnyObject], propertyKey: String) -> AnyObject? {
         let rMapping = reverseMapping()
         if rMapping.count > 0 {
@@ -240,9 +241,17 @@ class PPJSONSerialization: NSObject {
         return JSONObject[propertyKey]
     }
     
-    private func serialize() -> AnyObject? {
+}
+
+// MARK: - Serializer
+extension PPJSONSerialization {
+    
+    private func _serialize(rootObject: AnyObject?) -> AnyObject? {
+        if let rootObject = rootObject as? NSArray {
+            return rootObject.serializeAsPPJSONObject()
+        }
         let output = NSMutableDictionary()
-        let objectMirror = Mirror(reflecting: self)
+        let objectMirror = Mirror(reflecting: rootObject ?? self)
         for objectProperty in objectMirror.children {
             if let propertyKey = objectProperty.label {
                 var JSONKey = propertyKey
@@ -299,13 +308,26 @@ class PPJSONSerialization: NSObject {
     
 }
 
-class PPJSONArraySerialization: PPJSONSerialization {
+// MARK: - Helper
+extension PPJSONSerialization {
     
-    private override func serialize() -> AnyObject? {
-        if self.respondsToSelector("root") {
-            return self.valueForKey("root")
+    private func hasGetter(propertyKey: String) -> Bool {
+        return respondsToSelector(Selector("\(propertyKey)"))
+    }
+    
+    private func hasSetter(propertyKey: String) -> Bool {
+        return respondsToSelector(Selector("set\(firstLetterCapitalizedString(propertyKey)):"))
+    }
+    
+    private func firstLetterCapitalizedString(string: String) -> String {
+        if string.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 1 {
+            let firstLetter = string.substringToIndex(string.startIndex.advancedBy(1))
+            let otherLetter = string.substringFromIndex(string.startIndex.advancedBy(1))
+            return "\(firstLetter.uppercaseString)\(otherLetter)"
         }
-        return nil
+        else {
+            return string
+        }
     }
     
 }
