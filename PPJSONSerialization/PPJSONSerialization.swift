@@ -221,6 +221,11 @@ extension PPJSONSerialization {
                         output.setValue(arrayObject.serializeAsPPJSONObject(), forKey: jKey)
                     }
                 }
+                else if objectType.subjectType == "Dictionary" {
+                    if let dictionaryObject = objectProperty.value as? NSDictionary {
+                        output.setValue(dictionaryObject.serializeAsPPJSONObject(), forKey: jKey)
+                    }
+                }
                 else if let classObject = objectProperty.value as? PPJSONSerialization {
                     if let classOutput = classObject.serialize() {
                         output.setValue(classOutput, forKey: jKey)
@@ -491,6 +496,9 @@ extension NSArray {
             if let nextObject = theObject as? NSArray {
                 items.addObject(nextObject.serializeAsPPJSONObject())
             }
+            else if let nextObject = theObject as? NSDictionary {
+                items.addObject(nextObject.serializeAsPPJSONObject())
+            }
             else if let nextObject = theObject as? PPJSONSerialization {
                 if let nextSerializedObject = nextObject.serialize() {
                     items.addObject(nextSerializedObject)
@@ -521,6 +529,29 @@ extension NSDictionary {
         else {
             return nil
         }
+    }
+    
+    func serializeAsPPJSONObject() -> AnyObject {
+        let items = NSMutableDictionary()
+        enumerateKeysAndObjectsUsingBlock { (theKey, theObject, _) -> Void in
+            if let theKey = theKey as? NSCopying {
+                if let nextObject = theObject as? NSArray {
+                    items.setObject(nextObject.serializeAsPPJSONObject(), forKey: theKey)
+                }
+                else if let nextObject = theObject as? NSDictionary {
+                    items.setObject(nextObject.serializeAsPPJSONObject(), forKey: theKey)
+                }
+                else if let nextObject = theObject as? PPJSONSerialization {
+                    if let nextSerializedObject = nextObject.serialize() {
+                        items.setObject(nextSerializedObject, forKey: theKey)
+                    }
+                }
+                else {
+                    items.setObject(theObject, forKey: theKey)
+                }
+            }
+        }
+        return items.copy()
     }
     
 }
