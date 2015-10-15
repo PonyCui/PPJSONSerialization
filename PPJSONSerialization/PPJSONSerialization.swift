@@ -8,9 +8,9 @@
 
 import Foundation
 
-protocol PPCoding {
-    mutating func encodeAsPPObject() -> AnyObject?
-    mutating func decodeWithPPObject(PPObject: AnyObject) -> AnyObject?
+protocol PPCoding: NSObjectProtocol {
+    func encodeAsPPObject() -> AnyObject?
+    func decodeWithPPObject(PPObject: AnyObject) -> AnyObject?
 }
 
 class PPJSONSerialization: NSObject {
