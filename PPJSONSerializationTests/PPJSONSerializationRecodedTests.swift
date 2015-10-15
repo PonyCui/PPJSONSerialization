@@ -37,15 +37,17 @@ class CodeingStruct: PPJSONSerialization {
     
 }
 
-class XXX {
+class DataModel {
     
-    class YYY: PPJSONSerialization {
-        var optionalString: String?
-        var zzz = ZZZ3()
+    class Artist: PPJSONSerialization {
+        var name: String?
+        var mainSong = Song()
+        var songs = [Song()]
     }
     
-    class ZZZ3: PPJSONSerialization {
-        var subString: String?
+    class Song: PPJSONSerialization {
+        var name: String?
+        var duration: Double = 0.0
     }
     
 }
@@ -187,10 +189,17 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     
     func testChainning() {
         
-        let JSONString = "{\"optionalString\": \"Hello, World\", \"zzz\": {\"subString\":\"ZZZ\"}}"
+        let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}]}"
         
-        if let test = XXX.YYY(JSONString: JSONString) {
-            XCTAssert(test.zzz.subString == "ZZZ", "Pass")
+        if let test = DataModel.Artist(JSONString: JSONString) {
+            XCTAssert(test.name! == "Pony Cui", "Pass")
+            XCTAssert(test.mainSong.name == "Love Song", "Pass")
+            XCTAssert(test.mainSong.duration == 168.0, "Pass")
+            XCTAssert(test.songs[0].name == "Love Song", "Pass")
+            XCTAssert(test.songs[0].duration == 168.0, "Pass")
+        }
+        else {
+            XCTAssert(false, "Failed")
         }
     }
     

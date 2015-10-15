@@ -122,8 +122,19 @@ class PPJSONSerialization: NSObject {
                 let propertyType = "\(propertyMirror.subjectType)"
                 if let JSONObject = JSONObject as? [String: AnyObject] {
                     if propertyType.hasPrefix("Array") {
+                        var pType = propertyType
+                        if let arrayValues = self.valueForKey(propertyKey) {
+                            if let firstObject = arrayValues.firstObject {
+                                if let firstObject = firstObject {
+                                    if let fullType = firstObject.classForKeyedArchiver as? PPJSONSerialization.Type {
+                                        let fullTypeString = NSStringFromClass(fullType)
+                                        pType = fullTypeString
+                                    }
+                                }
+                            }
+                        }
                         self.setValue(NSArray(), forKey: propertyKey)
-                        parseArray(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
+                        parseArray(JSONObject, propertyKey: propertyKey, propertyType: pType)
                     }
                     else if let propertyValue = propertyValue as? PPJSONSerialization {
                         if let fullType = propertyValue.classForKeyedArchiver {
@@ -416,7 +427,7 @@ extension NSArray {
             return items
         }
         else {
-            if generatorType.containsString("Int") || generatorType.containsString("Double") {
+            if generatorType.containsString("Int") || generatorType.containsString("Double") || generatorType.containsString("Bool") {
                 for item in node {
                     items.append(PPJSONValueFormatter.numberValue(item))
                 }
@@ -434,14 +445,9 @@ extension NSArray {
                     nodeClass = nodeClass.stringByReplacingOccurrencesOfString("Array<([a-zA-Z]*?)>", withString: "$1", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
                     currentCount++
                 } while (nodeClass.containsString("Array") && currentCount < maxRetry)
-                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(nodeClass)") {
-                    if let NSObjectType = instanceClass as? NSObject.Type {
-                        for item in node {
-                            if let instance = NSObjectType.init() as? PPJSONSerialization {
-                                instance.parse(item)
-                                items.append(instance)
-                            }
-                        }
+                for item in node {
+                    if let instance = PPJSONValueFormatter.value(item, eagerTypeString: nodeClass) {
+                        items.append(instance)
                     }
                 }
             }
