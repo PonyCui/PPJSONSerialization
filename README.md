@@ -184,7 +184,7 @@ Optional("Max"), height:188.0
 
 #### PPCoding
 
-If you wonder control a type transferring job. Follow PPCoding protocol.
+If you eager to control type transferring. Follow PPCoding protocol.
 
 For example, we eager to transfer an timestamp(Int) to NSDate, that's a common requirement.
 
