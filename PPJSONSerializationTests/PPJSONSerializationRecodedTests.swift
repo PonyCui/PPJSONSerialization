@@ -37,6 +37,19 @@ class CodeingStruct: PPJSONSerialization {
     
 }
 
+class XXX {
+    
+    class YYY: PPJSONSerialization {
+        var optionalString: String?
+        var zzz = ZZZ3()
+    }
+    
+    class ZZZ3: PPJSONSerialization {
+        var subString: String?
+    }
+    
+}
+
 extension NSDate: PPCoding {
     
     func encodeAsPPObject() -> AnyObject? {
@@ -169,6 +182,15 @@ class PPJSONSerializationRecodedTests: XCTestCase {
             if let date = test.optionalDate {
                 XCTAssert(date.description == "2015-10-15 04:57:17 +0000", "Pass")
             }
+        }
+    }
+    
+    func testChainning() {
+        
+        let JSONString = "{\"optionalString\": \"Hello, World\", \"zzz\": {\"subString\":\"ZZZ\"}}"
+        
+        if let test = XXX.YYY(JSONString: JSONString) {
+            XCTAssert(test.zzz.subString == "ZZZ", "Pass")
         }
     }
     

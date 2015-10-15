@@ -26,7 +26,7 @@ class PPJSONSerialization: NSObject {
     }
     
     static func frameworkName() -> String {
-        let name = NSStringFromClass(self)
+        let name = NSStringFromClass(classForCoder())
         return name.stringByReplacingOccurrencesOfString(".PPJSONSerialization", withString: "")
     }
     
@@ -124,6 +124,15 @@ class PPJSONSerialization: NSObject {
                     if propertyType.hasPrefix("Array") {
                         self.setValue(NSArray(), forKey: propertyKey)
                         parseArray(JSONObject, propertyKey: propertyKey, propertyType: propertyType)
+                    }
+                    else if let propertyValue = propertyValue as? PPJSONSerialization {
+                        if let fullType = propertyValue.classForKeyedArchiver {
+                            let fullTypeString = NSStringFromClass(fullType)
+                            if let KVCValue = PPJSONValueFormatter.value(fetchJSONObject(JSONObject, propertyKey: propertyKey),
+                                eagerTypeString: fullTypeString) {
+                                    self.setValue(KVCValue, forKey: propertyKey)
+                            }
+                        }
                     }
                     else if let KVCValue = PPJSONValueFormatter.value(fetchJSONObject(JSONObject, propertyKey: propertyKey),
                         eagerTypeString: propertyType) {
@@ -326,7 +335,8 @@ class PPJSONValueFormatter {
                 return codeingInstance
             }
             else {
-                if let instanceClass = NSClassFromString("\(PPJSONSerialization.frameworkName()).\(trimedEagerTypeString)") {
+                if let instanceClass = NSClassFromString(trimedEagerTypeString) ??
+                    NSClassFromString("\(PPJSONSerialization.frameworkName()).\(trimedEagerTypeString)") {
                     if let NSObjectType = instanceClass as? NSObject.Type {
                         if let instance = NSObjectType.init() as? PPJSONSerialization {
                             instance.parse(originValue)
@@ -341,12 +351,12 @@ class PPJSONValueFormatter {
     
     static func codingValue(originValue: AnyObject, className: String) -> AnyObject? {
         if let classType = NSClassFromString(className) as? NSObject.Type {
-            if var classInstance = classType.init() as? PPCoding {
+            if let classInstance = classType.init() as? PPCoding {
                 if let returnValue = classInstance.decodeWithPPObject(originValue) {
                     return returnValue
                 }
                 else {
-                    return classInstance as? AnyObject
+                    return classInstance
                 }
             }
         }
