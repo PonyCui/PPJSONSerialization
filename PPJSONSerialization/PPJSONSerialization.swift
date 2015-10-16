@@ -131,13 +131,8 @@ class PPJSONArraySerialization: PPJSONSerialization {
 extension PPJSONSerialization {
     
     private func parse(JSONObject: AnyObject) -> Void {
-        let objectMirror = Mirror(reflecting: self)
-        for objectProperty in objectMirror.children {
-            
-            if let pKey = objectProperty.label {
-                if !hasGetter(pKey) || !hasSetter(pKey) {
-                    continue
-                }
+        for objectProperty in Mirror(reflecting: self).children {
+            if let pKey = objectProperty.label where (hasGetter(pKey) && hasSetter(pKey)) {
                 let objectType = typeOfChild(objectProperty)
                 if let JSONObject = JSONObject as? [String: AnyObject] {
                     if objectType.subjectType.hasPrefix("Array"),
@@ -179,20 +174,12 @@ extension PPJSONSerialization {
     }
     
     private func fetchJSONObject(JSONObject: [String: AnyObject], propertyKey: String) -> AnyObject? {
-        let rMapping = reverseMapping()
-        if rMapping.count > 0 {
-            if let JSONKey = rMapping[propertyKey] {
-                if let returnValue = JSONObject[JSONKey] {
-                    return returnValue
-                }
-            }
+        if let returnValue = JSONObject[(reverseMapping()[propertyKey] ?? propertyKey)] {
+            return returnValue
         }
-        let aMapping = mapping()
-        if aMapping.count > 0 {
-            for (mapJSONKey, mapPropertyKey) in aMapping {
-                if mapPropertyKey == propertyKey, let returnValue = JSONObject[mapJSONKey] {
-                    return returnValue
-                }
+        for (mapJSONKey, mapPropertyKey) in mapping() {
+            if mapPropertyKey == propertyKey, let returnValue = JSONObject[mapJSONKey] {
+                return returnValue
             }
         }
         return JSONObject[propertyKey]
@@ -210,10 +197,7 @@ extension PPJSONSerialization {
         let output = NSMutableDictionary()
         let objectMirror = Mirror(reflecting: rootObject ?? self)
         for objectProperty in objectMirror.children {
-            if let pKey = objectProperty.label {
-                if !hasGetter(pKey) {
-                    continue
-                }
+            if let pKey = objectProperty.label where hasGetter(pKey) {
                 let jKey = serializingJSONKey(pKey) ?? pKey
                 let objectType = typeOfChild(objectProperty)
                 if objectType.subjectType.hasPrefix("Array") {
@@ -252,18 +236,12 @@ extension PPJSONSerialization {
     }
     
     private func serializingJSONKey(propertyKey: String) -> String? {
-        let rMapping = reverseMapping()
-        if rMapping.count > 0 {
-            if let JSONKey = rMapping[propertyKey] {
-                return JSONKey
-            }
+        if let JSONKey = reverseMapping()[propertyKey] {
+            return JSONKey
         }
-        let aMapping = mapping()
-        if aMapping.count > 0 {
-            for (mapJSONKey, mapPropertyKey) in aMapping {
-                if mapPropertyKey == propertyKey {
-                    return mapJSONKey
-                }
+        for (mapJSONKey, mapPropertyKey) in mapping() {
+            if mapPropertyKey == propertyKey {
+                return mapJSONKey
             }
         }
         return nil
@@ -411,12 +389,7 @@ class PPJSONValueFormatter {
     static func codingValue(originValue: AnyObject, className: String) -> AnyObject? {
         if let classType = NSClassFromString(className) as? NSObject.Type {
             if let classInstance = classType.init() as? PPCoding {
-                if let returnValue = classInstance.decodeWithPPObject(originValue) {
-                    return returnValue
-                }
-                else {
-                    return classInstance
-                }
+                return classInstance.decodeWithPPObject(originValue) ?? classInstance
             }
         }
         return nil
@@ -424,9 +397,7 @@ class PPJSONValueFormatter {
     
     static func numberValue(originValue: AnyObject) -> NSNumber {
         if let transferString = originValue as? String {
-            if let transferNumber = NSNumberFormatter().numberFromString(transferString) {
-                return transferNumber
-            }
+            return NSNumberFormatter().numberFromString(transferString) ?? NSNumber()
         }
         else if let transferNumber = originValue as? NSNumber {
             return transferNumber
@@ -436,9 +407,7 @@ class PPJSONValueFormatter {
     
     static func stringValue(originValue: AnyObject) -> String {
         if let transferNumber = originValue as? NSNumber {
-            if let transferString = NSNumberFormatter().stringFromNumber(transferNumber) {
-                return transferString
-            }
+            return NSNumberFormatter().stringFromNumber(transferNumber) ?? ""
         }
         else if let transferString = originValue as? String {
             return transferString
