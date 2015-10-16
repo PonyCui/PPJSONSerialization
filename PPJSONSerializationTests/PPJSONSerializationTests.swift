@@ -191,12 +191,13 @@ class PPJSONSerializationTests: XCTestCase {
         simpleObject.simpleInt = 1024
         simpleObject.simpleDouble = 1024.01
         simpleObject.simpleArray = [1, 0, 2, 4]
-        let JSONString = simpleObject.JSONString()
-        XCTAssert((JSONString as NSString).containsString("\"simpleStr\":\"String Value\""), "Pass")
-        XCTAssert((JSONString as NSString).containsString("\"simpleBool\":true"), "Pass")
-        XCTAssert((JSONString as NSString).containsString("\"simpleInt\":1024"), "Pass")
-        XCTAssert((JSONString as NSString).containsString("\"simpleDouble\":1024.01"), "Pass")
-        XCTAssert((JSONString as NSString).containsString("\"simpleArray\":[1,0,2,4]"), "Pass")
+        if let JSONString = simpleObject.JSONString() {
+            XCTAssert(JSONString.containsString("\"simpleStr\":\"String Value\""), "Pass")
+            XCTAssert(JSONString.containsString("\"simpleBool\":true"), "Pass")
+            XCTAssert(JSONString.containsString("\"simpleInt\":1024"), "Pass")
+            XCTAssert(JSONString.containsString("\"simpleDouble\":1024.01"), "Pass")
+            XCTAssert(JSONString.containsString("\"simpleArray\":[1,0,2,4]"), "Pass")
+        }
     }
     
     func testArraySerialize() {

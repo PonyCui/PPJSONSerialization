@@ -86,13 +86,8 @@ class PPJSONSerialization: NSObject {
         });
     }
 
-    internal func JSONString() -> String {
-        if let JSONString = String(data: JSONData(), encoding: NSUTF8StringEncoding) {
-            return JSONString as String
-        }
-        else {
-            return ""
-        }
+    internal func JSONString() -> String? {
+        return String(data: JSONData(), encoding: NSUTF8StringEncoding)
     }
     
     internal func JSONData() -> NSData {
