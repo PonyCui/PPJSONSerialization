@@ -329,6 +329,21 @@ class DataModel { // Struct & Enum also available
     }
 
 }
+
+let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}], \"mapSong\": {\"sampleKey\": {\"name\":\"Love Song\", \"duration\": 168.0}}}"
+
+if let test = DataModel.Artist(JSONString: JSONString) {
+    XCTAssert(test.name! == "Pony Cui", "Pass")
+    XCTAssert(test.mainSong.name == "Love Song", "Pass")
+    XCTAssert(test.mainSong.duration == 168.0, "Pass")
+    XCTAssert(test.songs[0].name == "Love Song", "Pass")
+    XCTAssert(test.songs[0].duration == 168.0, "Pass")
+    XCTAssert(test.mapSong["sampleKey"]?.name == "Love Song", "Pass")
+    XCTAssert(test.mapSong["sampleKey"]?.duration == 168.0, "Pass")
+}
+else {
+    XCTAssert(false, "Failed")
+}
 ```
 
 * Multiple level nampspace is available.
