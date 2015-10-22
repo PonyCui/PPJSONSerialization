@@ -48,6 +48,11 @@ class PPJSONSerialization: NSObject {
         }
     }
     
+    init(JSONObject: AnyObject) {
+        super.init()
+        parse(JSONObject)
+    }
+    
     internal func updateWithJSONData(JSONData: NSData) -> Bool {
         do {
             let JSONObject = try NSJSONSerialization.JSONObjectWithData(JSONData, options: [])
