@@ -134,7 +134,7 @@ extension PPJSONSerialization {
         var children: [Mirror.Child] = []
         var currentMirror: Mirror? = Mirror(reflecting: self)
         repeat {
-            if currentMirror == nil || currentMirror!.subjectType is PPJSONSerialization {
+            if currentMirror == nil {
                 break
             }
             for child in currentMirror!.children {
