@@ -131,7 +131,18 @@ class PPJSONArraySerialization: PPJSONSerialization {
 extension PPJSONSerialization {
     
     private func parse(JSONObject: AnyObject) -> Void {
-        for objectProperty in Mirror(reflecting: self).children {
+        var children: [Mirror.Child] = []
+        var currentMirror: Mirror? = Mirror(reflecting: self)
+        repeat {
+            if currentMirror == nil || currentMirror!.subjectType is PPJSONSerialization {
+                break
+            }
+            for child in currentMirror!.children {
+                children.append(child)
+            }
+            currentMirror = currentMirror!.superclassMirror()
+        } while(true)
+        for objectProperty in children {
             if let pKey = objectProperty.label where (hasGetter(pKey) && hasSetter(pKey)) {
                 let objectType = typeOfChild(objectProperty)
                 if let JSONObject = JSONObject as? [String: AnyObject] {
