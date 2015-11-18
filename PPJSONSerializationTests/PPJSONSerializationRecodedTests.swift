@@ -53,11 +53,12 @@ class DataModel {
     
 }
 
-class SubjectClass: PPJSONSerialization {
-    var name: String?
+class CommonResponse: PPJSONSerialization {
+    var error: String?
 }
 
-class SubClass: SubjectClass {
+class ArtistResponse: CommonResponse {
+    var name: String?
     var mainSong = DataModel.Song()
     var songs = [DataModel.Song()]
     var mapSong = [".": DataModel.Song()]
@@ -230,9 +231,16 @@ class PPJSONSerializationRecodedTests: XCTestCase {
     }
     
     func testSubclass() {
+        let JSONString = "{\"error\":\"404 not found!\"}"
+        let JSONObject = try! NSJSONSerialization.JSONObjectWithData(JSONString.dataUsingEncoding(NSUTF8StringEncoding)!, options: [])
+        let test = ArtistResponse(JSONObject: JSONObject)
+        XCTAssert(test.error == "404 not found!", "Pass")
+    }
+    
+    func testSubclassII() {
         let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}], \"mapSong\": {\"sampleKey\": {\"name\":\"Love Song\", \"duration\": 168.0}}}"
         let JSONObject = try! NSJSONSerialization.JSONObjectWithData(JSONString.dataUsingEncoding(NSUTF8StringEncoding)!, options: [])
-        let test = SubClass(JSONObject: JSONObject)
+        let test = ArtistResponse(JSONObject: JSONObject)
         XCTAssert(test.name! == "Pony Cui", "Pass")
         XCTAssert(test.mainSong.name == "Love Song", "Pass")
         XCTAssert(test.mainSong.duration == 168.0, "Pass")

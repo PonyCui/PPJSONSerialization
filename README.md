@@ -348,6 +348,20 @@ else {
 
 * Multiple level nampspace is available.
 
+#### Sub-Class
+
+You can subclass your struct, it's okey.
+
+```
+class CommonResponse: PPJSONSerialization {
+    var error: String?
+}
+
+class ArtistResponse: CommonResponse {
+    // ...
+}
+```
+
 PPJSONSerialization is still in development, welcome to improve the project together.
 
 ## Requirements
