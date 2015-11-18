@@ -53,6 +53,16 @@ class DataModel {
     
 }
 
+class SubjectClass: PPJSONSerialization {
+    var name: String?
+}
+
+class SubClass: SubjectClass {
+    var mainSong = DataModel.Song()
+    var songs = [DataModel.Song()]
+    var mapSong = [".": DataModel.Song()]
+}
+
 extension NSDate: PPCoding {
     
     func encodeAsPPObject() -> AnyObject? {
@@ -210,6 +220,19 @@ class PPJSONSerializationRecodedTests: XCTestCase {
         let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}], \"mapSong\": {\"sampleKey\": {\"name\":\"Love Song\", \"duration\": 168.0}}}"
         let JSONObject = try! NSJSONSerialization.JSONObjectWithData(JSONString.dataUsingEncoding(NSUTF8StringEncoding)!, options: [])
         let test = DataModel.Artist(JSONObject: JSONObject)
+        XCTAssert(test.name! == "Pony Cui", "Pass")
+        XCTAssert(test.mainSong.name == "Love Song", "Pass")
+        XCTAssert(test.mainSong.duration == 168.0, "Pass")
+        XCTAssert(test.songs[0].name == "Love Song", "Pass")
+        XCTAssert(test.songs[0].duration == 168.0, "Pass")
+        XCTAssert(test.mapSong["sampleKey"]?.name == "Love Song", "Pass")
+        XCTAssert(test.mapSong["sampleKey"]?.duration == 168.0, "Pass")
+    }
+    
+    func testSubclass() {
+        let JSONString = "{\"name\": \"Pony Cui\", \"mainSong\": {\"name\":\"Love Song\", \"duration\": 168.0}, \"songs\": [{\"name\":\"Love Song\", \"duration\": 168.0}], \"mapSong\": {\"sampleKey\": {\"name\":\"Love Song\", \"duration\": 168.0}}}"
+        let JSONObject = try! NSJSONSerialization.JSONObjectWithData(JSONString.dataUsingEncoding(NSUTF8StringEncoding)!, options: [])
+        let test = SubClass(JSONObject: JSONObject)
         XCTAssert(test.name! == "Pony Cui", "Pass")
         XCTAssert(test.mainSong.name == "Love Song", "Pass")
         XCTAssert(test.mainSong.duration == 168.0, "Pass")
